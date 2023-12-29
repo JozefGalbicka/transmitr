@@ -9,7 +9,46 @@
 #define PORT 8080
 #define nofile "File Not Found!"
 
-int client_send_file(const char *file_name) {
+void client_init(Client *self) {
+    self->servers = malloc(sizeof(ArrayList));
+    array_list_init(self->servers, sizeof(int));
+}
+
+void client_destroy(Client *self) {
+    client_close_all_connections(self);
+
+    array_list_destroy(self->servers);
+    free(self->servers);
+    self->servers = NULL;
+}
+
+// function reading file 'fp' into chunk 'buf' of size 's'
+static int read_chunk(FILE *fp, char *buf, int s) {
+    buf[0] = '\0';
+
+    int i, len;
+    if (fp == NULL) {
+        strcpy(buf, nofile);
+        len = strlen(nofile);
+        buf[len] = EOF;
+        fprintf(stderr, "ERROR READING FILE (== NULL)");
+        return 1;
+    }
+
+    char ch;
+    for (i = 0; i < s - 1; i++) {
+        ch = fgetc(fp);
+        buf[i] = ch;
+        if (ch == EOF) {
+            buf[i] = '\0';
+            return 1;
+        }
+    }
+    buf[s - 1] = '\0';
+    return 0;
+}
+
+int client_connect(Client *self, const char *ip_addr) {
     int status, valread, client_fd;
     struct sockaddr_in serv_addr;
     // char buffer[1024] = {0};
@@ -23,7 +62,7 @@ int client_send_file(const char *file_name) {
 
     // Convert IPv4 and IPv6 addresses from text to binary
     // form
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, ip_addr, &serv_addr.sin_addr) <= 0) {
         printf("\nInvalid address/ Address not supported \n");
         return -1;
     }
@@ -33,7 +72,21 @@ int client_send_file(const char *file_name) {
         printf("\nConnection Failed \n");
         return -1;
     }
+    array_list_add(self->servers, &client_fd);
+    return client_fd;
+}
 
+void client_close_all_connections(Client *self) {
+    ArrayListIterator it;
+    array_list_iterator_init(&it, self->servers);
+    while (array_list_iterator_has_next(&it)) {
+        void *tmp = array_list_iterator_move_next(&it);
+        close(*(int *)tmp);
+    }
+    array_list_iterator_destroy(&it);
+}
+
+int client_send_file(int client_fd, const char *file_name) {
     // SENDING THE DATA
     FILE *fp = fopen(file_name, "r");
 
@@ -67,33 +120,6 @@ int client_send_file(const char *file_name) {
     //               1024 - 1); // subtract 1 for the null terminator at the end
     // printf("%s\n", buffer);
 
-    // closing the connected socket
-    close(client_fd);
     return 0;
 }
 
-// function reading file 'fp' into chunk 'buf' of size 's'
-int read_chunk(FILE *fp, char *buf, int s) {
-    buf[0] = '\0';
-
-    int i, len;
-    if (fp == NULL) {
-        strcpy(buf, nofile);
-        len = strlen(nofile);
-        buf[len] = EOF;
-        fprintf(stderr, "ERROR READING FILE (== NULL)");
-        return 1;
-    }
-
-    char ch;
-    for (i = 0; i < s - 1; i++) {
-        ch = fgetc(fp);
-        buf[i] = ch;
-        if (ch == EOF) {
-            buf[i] = '\0';
-            return 1;
-        }
-    }
-    buf[s - 1] = '\0';
-    return 0;
-}

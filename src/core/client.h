@@ -1,5 +1,15 @@
 
+#include "../structures/list/array_list.h"
 #include <stdio.h>
 
-int client_send_file(const char *file_name);
-int read_chunk(FILE *fp, char *buf, int s);
+typedef struct Client {
+    struct ArrayList *servers;
+} Client;
+
+void client_init(Client *self);
+void client_destroy(Client *self);
+
+int client_connect(Client *self, const char *ip_addr);
+void client_close_all_connections(Client *self);
+
+int client_send_file(int client_fd, const char *file_name);
