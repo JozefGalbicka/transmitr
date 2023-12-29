@@ -36,4 +36,6 @@ char *left_trim(char *str) {
     return str;
 }
 
-char *trim(char *str) { return left_trim(right_trim(str)); }
+char *trim(char *str) {
+    return left_trim(right_trim(str));
+}

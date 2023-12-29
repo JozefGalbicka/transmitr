@@ -6,4 +6,5 @@ IndentWidth: 4
 ---
 Language: Cpp
 Standard: c++11
+AllowShortFunctionsOnASingleLine: Empty
 ...
