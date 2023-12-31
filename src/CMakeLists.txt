@@ -16,6 +16,12 @@ add_library (transmitr_lib
         structures/tree/min_heap.c
         structures/tree/min_heap_node.h
         structures/tree/min_heap_node.c
+        compression_algorithms/huffman/huffman_tree.h
+        compression_algorithms/huffman/frequency_table.h
+        compression_algorithms/huffman/huffman_encode.h
+        compression_algorithms/huffman/huffman_decode.h
+        compression_algorithms/huffman/huffman_core.h
+        compression_algorithms/huffman/frequency_table.c
 )
 
 add_executable(transmitr
