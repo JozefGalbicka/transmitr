@@ -17,6 +17,24 @@ long long min_heap_node_get_freq(MinHeapNode* this)
 }
 
 
+char min_heap_node_get_data(MinHeapNode* this)
+{
+    return this->data;
+}
+
+
+void min_heap_node_set_freq(MinHeapNode* this, long long freq)
+{
+    this->freq = freq;
+}
+
+
+void min_heap_node_set_data(MinHeapNode* this, char data)
+{
+    this->data = data;
+}
+
+
 void min_heap_node_destroy(MinHeapNode* this)
 {
     this->freq = EMPTY;

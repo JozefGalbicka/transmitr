@@ -17,6 +17,9 @@ typedef struct MinHeapNode
 
 void min_heap_node_init(MinHeapNode* this, char data, long long freq);
 long long min_heap_node_get_freq(MinHeapNode* this);
+char min_heap_node_get_data(MinHeapNode* this);
+void min_heap_node_set_freq(MinHeapNode* this, long long freq);
+void min_heap_node_set_data(MinHeapNode* this, char data);
 void min_heap_node_destroy(MinHeapNode* this);
 
 
