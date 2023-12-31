@@ -12,6 +12,10 @@ add_library (transmitr_lib
     utils/strings.c
     utils/prints.h
     utils/prints.c
+        structures/tree/min_heap.h
+        structures/tree/min_heap.c
+        structures/tree/min_heap_node.h
+        structures/tree/min_heap_node.c
 )
 
 add_executable(transmitr
