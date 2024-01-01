@@ -8,6 +8,9 @@
 #include <unistd.h>
 #define PORT 8080
 #define nofile "File Not Found!"
+#include "header.h"
+
+#include <linux/tcp.h>
 
 void client_init(Client *self) {
     self->servers = malloc(sizeof(ArrayList));
@@ -96,25 +99,69 @@ int client_send_file(int client_fd, const char *file_name) {
     else
         printf("\nFile Successfully opened!\n");
 
-    char *buf;
-    size_t buf_size = 4096;
-    buf = malloc(buf_size);
+#define BUF_SIZE 4096
+
+    char *buf = malloc(BUF_SIZE);
     ssize_t sent_len = 0;
 
-    printf("Sending file '%s'\n", file_name);
-    while (read_chunk(fp, buf, buf_size) == 0) {
+    Header header;
+    strcpy(header.type, "FILE");
+    strcpy(header.flags, "s");
+    header.data_length = strlen(file_name) + 1;
+
+    unsigned char header_buf[16];
+    printf("Sending file '%.*s'\n", 16, file_name);
+    serialize_header(&header, header_buf);
+    sent_len = send(client_fd, header_buf, 16, 0);
+    printf("%zdu (Header)\n", sent_len);
+    sent_len = send(client_fd, file_name, strlen(file_name) + 1, 0);
+    printf("%zdu (Filename)\n", sent_len);
+
+    strcpy(header.flags, "f");
+
+    read_chunk(fp, buf, BUF_SIZE);
+    do {
+        // Sending header
+        header.data_length = strlen(buf);
+        sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+        printf("%zdu (Header)\n", sent_len);
+
+        // Sending data
         sent_len = send(client_fd, buf, strlen(buf), 0);
-        printf("%zdu\n", sent_len);
+        printf("%zdu (Data)\n", sent_len);
+
         // printf("%s", buf);
         // printf("%lu\n", strlen(buf));
-    }
+    } while (read_chunk(fp, buf, BUF_SIZE) == 0);
+
+    header.data_length = strlen(buf);
+    sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+    printf("%zdu (Header)\n", sent_len);
+
     sent_len = send(client_fd, buf, strlen(buf), 0);
-    printf("%zdu\n", sent_len);
+    printf("%zdu (Data)\n", sent_len);
+
+    int flag = 1;
+    setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
+
+    strcpy(header.flags, "e");
+    header.data_length = strlen(file_name) + 1;
+    sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+    printf("%zdu (Header)\n", sent_len);
+
+    sent_len = send(client_fd, file_name, strlen(file_name) + 1, 0);
+    printf("%zdu (Filename)\n", sent_len);
+
+    flag = 0;
+    setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
+
     printf("\nFinished sending the file '%s'\n", file_name);
 
     fclose(fp);
     free(buf);
 
+    //ioctl(client_fd, SIOCOUTQ, &bytes);
+    
     // RECEIVE THE DATA
     // valread = read(client_fd, buffer,
     //               1024 - 1); // subtract 1 for the null terminator at the end
@@ -122,4 +169,3 @@ int client_send_file(int client_fd, const char *file_name) {
 
     return 0;
 }
-
