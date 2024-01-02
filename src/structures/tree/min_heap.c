@@ -64,14 +64,14 @@ int min_heap_get_parent(int index)
 }
 
 
-bool min_heap_add(MinHeap* this,char data, long long freq,long long (*get_Value)(void*))
+bool min_heap_add(MinHeap* this,unsigned char data, long long freq,long long (*get_Value)(void*),void (*init)(void*,unsigned char,long long), void (*destroy)(void*))
 {
-    MinHeapNode* new = malloc(this->node_size);
+    void* new = malloc(this->node_size);
 
     if (new == NULL)
         return false;
 
-    min_heap_node_init(new, data, freq);
+    init(new, data, freq);
 
     if(!min_heap_has_capacity(this))
         if(!min_heap_increase_capacity(this))
@@ -81,6 +81,7 @@ bool min_heap_add(MinHeap* this,char data, long long freq,long long (*get_Value)
     {
         memcpy((unsigned char*)this->array,new,this->node_size);
         this->size++;
+        free(new);
         return true;
     }
 
@@ -100,6 +101,7 @@ bool min_heap_add(MinHeap* this,char data, long long freq,long long (*get_Value)
 
     memcpy((unsigned char*)this->array + i * this->node_size, new, this->node_size);
 
+    destroy(new);
     free(new);
     return true;
 }
@@ -149,7 +151,9 @@ void min_heap_remove_min(MinHeap* this,long long (*get_Value)(void*), void* outp
 
     memcpy(output,this->array,this->node_size);
     this->size--;
-    memcpy(this->array,this->array + this->size*this->node_size,this->node_size);
+    memcpy(this->array,(unsigned char*)this->array + this->size*this->node_size,this->node_size);
+
+
 
     int start_index = 0;
     while (start_index < this->size)
@@ -168,11 +172,40 @@ void min_heap_remove_min(MinHeap* this,long long (*get_Value)(void*), void* outp
         if (min_index == start_index)
             break;
 
-        MinHeapNode tmp;
-        memcpy(&tmp,this->array + start_index*this->node_size,this->node_size);
+        void* tmp = malloc(this->node_size);
+        memcpy(tmp,this->array + start_index*this->node_size,this->node_size);
         memcpy(this->array + start_index*this->node_size,this->array + min_index*this->node_size,this->node_size);
-        memcpy(this->array + min_index*this->node_size,&tmp,this->node_size);
+        memcpy(this->array + min_index*this->node_size,tmp,this->node_size);
 
+        free(tmp);
         start_index = min_index;
     }
+}
+
+bool min_heap_add_node(MinHeap* this, void* node,long long (*get_Value)(void*))
+{
+    if (this == NULL || node == NULL)
+        return false;
+
+    if (!min_heap_has_capacity(this))
+        if (!min_heap_increase_capacity(this))
+            return false;
+
+
+
+    size_t i = this->size;
+    this->size++;
+    while (i > 0)
+    {
+        size_t parentIndex = min_heap_get_parent(i);
+        if (get_Value(node) >= get_Value((void*)((unsigned char*)this->array + parentIndex * this->node_size)))
+            break;
+
+
+        memcpy((unsigned char*)this->array + i * this->node_size,(unsigned char*)this->array + parentIndex * this->node_size,this->node_size);
+        i = parentIndex;
+    }
+
+    memcpy((unsigned char*)this->array + i * this->node_size, node, this->node_size);
+    return true;
 }
