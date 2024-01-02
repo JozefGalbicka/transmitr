@@ -23,19 +23,18 @@ void frequency_table_destroy(FrTable* this)
 }
 
 
-bool frequency_table_create(FrTable* this, const char *filename)
+bool frequency_table_create(FrTable* this, unsigned char* input)
 {
-    FILE* file = fopen(filename, "rb");
 
-    if (file == NULL)
-        return false;
+    size_t inputLen = strlen(input);
 
-    int c;
-    while ((c = fgetc(file)) != EOF)
-    {
-        this->array[c]++;
-    }
-
-    fclose(file);
+    for(int i = 0; i < inputLen; i++)
+        this->array[input[i]]++;
     return true;
+}
+
+
+long long frequency_table_get_frequency(FrTable* this, size_t index)
+{
+    return this->array[index];
 }

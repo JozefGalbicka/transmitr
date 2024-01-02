@@ -6,6 +6,9 @@
 #define TRANSMITR_FREQUENCY_TABLE_H
 
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "structures/tree/min_heap_node.h"
 
 typedef struct FrequencyTable
 {
@@ -14,8 +17,8 @@ typedef struct FrequencyTable
 
 void frequency_table_init(FrTable* this);
 void frequency_table_destroy(FrTable* this);
-bool frequency_table_create(FrTable* this, const char *filename);
-
+bool frequency_table_create(FrTable* this, unsigned char* input);
+long long frequency_table_get_frequency(FrTable* this, size_t index);
 
 
 #endif // TRANSMITR_FREQUENCY_TABLE_H
