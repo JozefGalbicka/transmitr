@@ -1,2 +1,3 @@
 
-int run_server();
+#include <stdio.h>
+int run_server(FILE* f);

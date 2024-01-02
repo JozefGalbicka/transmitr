@@ -8,72 +8,25 @@
 #include <unistd.h>
 #define PORT 8080
 #define nofile "File Not Found!"
+#include "header.h"
 
-int client_send_file(const char *file_name) {
-    int status, valread, client_fd;
-    struct sockaddr_in serv_addr;
-    // char buffer[1024] = {0};
-    if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
+#include <linux/tcp.h>
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
+void client_init(Client *self) {
+    self->servers = malloc(sizeof(ArrayList));
+    array_list_init(self->servers, sizeof(int));
+}
 
-    // Convert IPv4 and IPv6 addresses from text to binary
-    // form
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
+void client_destroy(Client *self) {
+    client_close_all_connections(self);
 
-    if ((status = connect(client_fd, (struct sockaddr *)&serv_addr,
-                          sizeof(serv_addr))) < 0) {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
-
-    // SENDING THE DATA
-    FILE *fp = fopen(file_name, "r");
-
-    printf("\nFile Name Received: %s\n", file_name);
-    if (fp == NULL)
-        printf("\nFile open failed!\n");
-    else
-        printf("\nFile Successfully opened!\n");
-
-    char *buf;
-    size_t buf_size = 4096;
-    buf = malloc(buf_size);
-    ssize_t sent_len = 0;
-
-    printf("Sending file '%s'\n", file_name);
-    while (read_chunk(fp, buf, buf_size) == 0) {
-        sent_len = send(client_fd, buf, strlen(buf), 0);
-        printf("%zdu\n", sent_len);
-        // printf("%s", buf);
-        // printf("%lu\n", strlen(buf));
-    }
-    sent_len = send(client_fd, buf, strlen(buf), 0);
-    printf("%zdu\n", sent_len);
-    printf("\nFinished sending the file '%s'\n", file_name);
-
-    fclose(fp);
-    free(buf);
-
-    // RECEIVE THE DATA
-    // valread = read(client_fd, buffer,
-    //               1024 - 1); // subtract 1 for the null terminator at the end
-    // printf("%s\n", buffer);
-
-    // closing the connected socket
-    close(client_fd);
-    return 0;
+    array_list_destroy(self->servers);
+    free(self->servers);
+    self->servers = NULL;
 }
 
 // function reading file 'fp' into chunk 'buf' of size 's'
-int read_chunk(FILE *fp, char *buf, int s) {
+static int read_chunk(FILE *fp, char *buf, int s) {
     buf[0] = '\0';
 
     int i, len;
@@ -95,5 +48,124 @@ int read_chunk(FILE *fp, char *buf, int s) {
         }
     }
     buf[s - 1] = '\0';
+    return 0;
+}
+
+int client_connect(Client *self, const char *ip_addr) {
+    int status, valread, client_fd;
+    struct sockaddr_in serv_addr;
+    // char buffer[1024] = {0};
+    if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("\n Socket creation error \n");
+        return -1;
+    }
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+
+    // Convert IPv4 and IPv6 addresses from text to binary
+    // form
+    if (inet_pton(AF_INET, ip_addr, &serv_addr.sin_addr) <= 0) {
+        printf("\nInvalid address/ Address not supported \n");
+        return -1;
+    }
+
+    if ((status = connect(client_fd, (struct sockaddr *)&serv_addr,
+                          sizeof(serv_addr))) < 0) {
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+    array_list_add(self->servers, &client_fd);
+    return client_fd;
+}
+
+void client_close_all_connections(Client *self) {
+    ArrayListIterator it;
+    array_list_iterator_init(&it, self->servers);
+    while (array_list_iterator_has_next(&it)) {
+        void *tmp = array_list_iterator_move_next(&it);
+        close(*(int *)tmp);
+    }
+    array_list_iterator_destroy(&it);
+}
+
+int client_send_file(int client_fd, const char *file_name) {
+    // SENDING THE DATA
+    FILE *fp = fopen(file_name, "r");
+
+    printf("\nFile Name Received: %s\n", file_name);
+    if (fp == NULL)
+        printf("\nFile open failed!\n");
+    else
+        printf("\nFile Successfully opened!\n");
+
+#define BUF_SIZE 4096
+
+    char *buf = malloc(BUF_SIZE);
+    ssize_t sent_len = 0;
+
+    Header header;
+    strcpy(header.type, "FILE");
+    strcpy(header.flags, "s");
+    header.data_length = strlen(file_name) + 1;
+
+    unsigned char header_buf[16];
+    printf("Sending file '%.*s'\n", 16, file_name);
+    serialize_header(&header, header_buf);
+    sent_len = send(client_fd, header_buf, 16, 0);
+    printf("%zdu (Header)\n", sent_len);
+    sent_len = send(client_fd, file_name, strlen(file_name) + 1, 0);
+    printf("%zdu (Filename)\n", sent_len);
+
+    strcpy(header.flags, "f");
+
+    read_chunk(fp, buf, BUF_SIZE);
+    do {
+        // Sending header
+        header.data_length = strlen(buf);
+        sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+        printf("%zdu (Header)\n", sent_len);
+
+        // Sending data
+        sent_len = send(client_fd, buf, strlen(buf), 0);
+        printf("%zdu (Data)\n", sent_len);
+
+        // printf("%s", buf);
+        // printf("%lu\n", strlen(buf));
+    } while (read_chunk(fp, buf, BUF_SIZE) == 0);
+
+    header.data_length = strlen(buf);
+    sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+    printf("%zdu (Header)\n", sent_len);
+
+    sent_len = send(client_fd, buf, strlen(buf), 0);
+    printf("%zdu (Data)\n", sent_len);
+
+    int flag = 1;
+    setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
+
+    strcpy(header.flags, "e");
+    header.data_length = strlen(file_name) + 1;
+    sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+    printf("%zdu (Header)\n", sent_len);
+
+    sent_len = send(client_fd, file_name, strlen(file_name) + 1, 0);
+    printf("%zdu (Filename)\n", sent_len);
+
+    flag = 0;
+    setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
+
+    printf("\nFinished sending the file '%s'\n", file_name);
+
+    fclose(fp);
+    free(buf);
+
+    //ioctl(client_fd, SIOCOUTQ, &bytes);
+    
+    // RECEIVE THE DATA
+    // valread = read(client_fd, buffer,
+    //               1024 - 1); // subtract 1 for the null terminator at the end
+    // printf("%s\n", buffer);
+
     return 0;
 }
