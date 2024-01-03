@@ -135,12 +135,13 @@ int run_server(FILE *f) {
                 if (chunk_remaining_bytes >= (valread - buffer_index)) { // rest of the buffer is data
                     if (*h.flags == 's') {
                         DEBUG_MESSAGE("--START FILENAME: ");
-                        fprintf(f, "%.*s\n", (int)valread - buffer_index, cur);
+                        fprintf(stdout, "%.*s\n", (int)valread - buffer_index, cur);
                     } else if (*h.flags == 'e') {
                         DEBUG_MESSAGE("--END FILENAME: ");
-                        fprintf(f, "%.*s\n", (int)valread - buffer_index, cur);
+                        fprintf(stdout, "%.*s\n", (int)valread - buffer_index, cur);
                     } else {
-                        fprintf(f, "%.*s", (int)valread - buffer_index, cur);
+                        //fprintf(f, "%.*s", (int)valread - buffer_index, cur);
+                        fwrite(cur, 1, valread - buffer_index, f);
                     }
                     chunk_remaining_bytes -= (valread - buffer_index);
                     buffer_index += (valread - buffer_index);
@@ -152,12 +153,13 @@ int run_server(FILE *f) {
                 } else { // there is another header in the buffer somewhere
                     if (*h.flags == 's') {
                         DEBUG_MESSAGE("--START FILENAME: ");
-                        fprintf(f, "%.*s", chunk_remaining_bytes, cur);
+                        fprintf(stdout, "%.*s", chunk_remaining_bytes, cur);
                     } else if (*h.flags == 'e') {
                         DEBUG_MESSAGE("--END FILENAME: ");
-                        fprintf(f, "%.*s", chunk_remaining_bytes, cur);
+                        fprintf(stdout, "%.*s", chunk_remaining_bytes, cur);
                     } else {
-                        fprintf(f, "%.*s", chunk_remaining_bytes, cur);
+                        //fprintf(f, "%.*s", chunk_remaining_bytes, cur);
+                        fwrite(cur, 1, chunk_remaining_bytes, f);
                     }
                     cur += chunk_remaining_bytes;
                     buffer_index += chunk_remaining_bytes; // == valread
