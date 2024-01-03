@@ -9,6 +9,7 @@
 #define PORT 8080
 #define nofile "File Not Found!"
 #include "header.h"
+#include "../utils/strings.h"
 
 #include <linux/tcp.h>
 
@@ -89,7 +90,8 @@ void client_close_all_connections(Client *self) {
     array_list_iterator_destroy(&it);
 }
 
-int client_send_file(int client_fd, const char *file_name) {
+int client_send_file(int client_fd, const char *path) {
+    const char* file_name = get_basename(path);
     // SENDING THE DATA
     FILE *fp = fopen(file_name, "r");
 

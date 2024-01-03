@@ -12,4 +12,4 @@ void client_destroy(Client *self);
 int client_connect(Client *self, const char *ip_addr);
 void client_close_all_connections(Client *self);
 
-int client_send_file(int client_fd, const char *file_name);
+int client_send_file(int client_fd, const char *path);
