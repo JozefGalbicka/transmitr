@@ -2,8 +2,9 @@
 // Server side C/C++ program to demonstrate Socket
 // programming
 #include "server.h"
-
+#include "../utils/macros.h"
 #include "header.h"
+
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,9 +73,9 @@ int run_server(FILE *f) {
             cur = buffer;
             buffer_index = 0;
 
-            printf("\n--%zd B\n", valread);
+            DEBUG_MESSAGE("\n--%zd B\n", valread);
             while (buffer_index < valread) { // while != last index
-                // printf("--New-cycle\n");
+                // DEBUG_MESSAGE("--New-cycle\n");
 
                 if (first) { // time to read new header
 
@@ -95,7 +96,7 @@ int run_server(FILE *f) {
                             cur += (valread - buffer_index);
                             buffer_index += (valread - buffer_index);
 
-                            // fprintf(f, "tmp_head_buf_loaded: %u\n",
+                            // DEBUG_MESSAGE("tmp_head_buf_loaded: %u\n",
                             //         tmp_head_buf_loaded);
 
                             continue; // could/should be break, but for debug
@@ -104,7 +105,7 @@ int run_server(FILE *f) {
                         }
 
                     } else { // reading rest of the header
-                        // fprintf(f, "Entering split-header case\n");
+                        // DEBUG_MESSAGE("Entering split-header case\n");
 
                         uint32_t remaining_buffer_size = 16 - tmp_head_buf_loaded;
 
@@ -133,10 +134,10 @@ int run_server(FILE *f) {
                 // rest of the buffer is block of data
                 if (chunk_remaining_bytes >= (valread - buffer_index)) { // rest of the buffer is data
                     if (*h.flags == 's') {
-                        fprintf(f, "--START FILENAME: ");
+                        DEBUG_MESSAGE("--START FILENAME: ");
                         fprintf(f, "%.*s\n", (int)valread - buffer_index, cur);
                     } else if (*h.flags == 'e') {
-                        fprintf(f, "--END FILENAME: ");
+                        DEBUG_MESSAGE("--END FILENAME: ");
                         fprintf(f, "%.*s\n", (int)valread - buffer_index, cur);
                     } else {
                         fprintf(f, "%.*s", (int)valread - buffer_index, cur);
@@ -144,16 +145,16 @@ int run_server(FILE *f) {
                     chunk_remaining_bytes -= (valread - buffer_index);
                     buffer_index += (valread - buffer_index);
 
-                    printf("\nENTIRE BUFFER USED\n");
-                    printf("chunk_remaining: %d\n", chunk_remaining_bytes);
-                    printf("buffer_index: %d\n", buffer_index);
-                    printf("valread: %zd\n\n", valread);
+                    DEBUG_MESSAGE("\nENTIRE BUFFER USED\n");
+                    DEBUG_MESSAGE("chunk_remaining: %d\n", chunk_remaining_bytes);
+                    DEBUG_MESSAGE("buffer_index: %d\n", buffer_index);
+                    DEBUG_MESSAGE("valread: %zd\n\n", valread);
                 } else { // there is another header in the buffer somewhere
                     if (*h.flags == 's') {
-                        fprintf(f, "--START FILENAME: ");
+                        DEBUG_MESSAGE("--START FILENAME: ");
                         fprintf(f, "%.*s", chunk_remaining_bytes, cur);
                     } else if (*h.flags == 'e') {
-                        fprintf(f, "--END FILENAME: ");
+                        DEBUG_MESSAGE("--END FILENAME: ");
                         fprintf(f, "%.*s", chunk_remaining_bytes, cur);
                     } else {
                         fprintf(f, "%.*s", chunk_remaining_bytes, cur);
@@ -163,10 +164,10 @@ int run_server(FILE *f) {
                                                            //
                     chunk_remaining_bytes = 0;
 
-                    printf("\nPARTIAL BUFFER USED\n");
-                    printf("chunk_remaining: %d\n", chunk_remaining_bytes);
-                    printf("buffer_index: %d\n", buffer_index);
-                    printf("valread: %d\n\n", (int)valread);
+                    DEBUG_MESSAGE("\nPARTIAL BUFFER USED\n");
+                    DEBUG_MESSAGE("chunk_remaining: %d\n", chunk_remaining_bytes);
+                    DEBUG_MESSAGE("buffer_index: %d\n", buffer_index);
+                    DEBUG_MESSAGE("valread: %d\n\n", (int)valread);
                 }
 
                 if (chunk_remaining_bytes == 0) {

@@ -12,6 +12,7 @@ add_library (transmitr_lib
     utils/strings.c
     utils/prints.h
     utils/prints.c
+    utils/macros.h
     structures/tree/min_heap.h
     structures/tree/min_heap.c
     structures/tree/min_heap_node.h
