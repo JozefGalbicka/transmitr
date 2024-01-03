@@ -88,7 +88,6 @@ bool min_heap_add(MinHeap* this,unsigned char data, long long freq,long long (*g
     size_t i = this->size;
     this->size++;
 
-
     while (i > 0) {
         size_t parentIndex = min_heap_get_parent(i);
         if (get_Value(new) >= get_Value((void*)((unsigned char*)this->array + parentIndex * this->node_size))) {
@@ -168,7 +167,6 @@ void min_heap_remove_min(MinHeap* this,long long (*get_Value)(void*), void* outp
         if (right < this->size && get_Value((unsigned char*)this->array + right*this->node_size) < get_Value((unsigned char*)this->array + min_index*this->node_size))
             min_index = right;
 
-
         if (min_index == start_index)
             break;
 
@@ -191,8 +189,6 @@ bool min_heap_add_node(MinHeap* this, void* node,long long (*get_Value)(void*))
         if (!min_heap_increase_capacity(this))
             return false;
 
-
-
     size_t i = this->size;
     this->size++;
     while (i > 0)
@@ -200,7 +196,6 @@ bool min_heap_add_node(MinHeap* this, void* node,long long (*get_Value)(void*))
         size_t parentIndex = min_heap_get_parent(i);
         if (get_Value(node) >= get_Value((void*)((unsigned char*)this->array + parentIndex * this->node_size)))
             break;
-
 
         memcpy((unsigned char*)this->array + i * this->node_size,(unsigned char*)this->array + parentIndex * this->node_size,this->node_size);
         i = parentIndex;
