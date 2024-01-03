@@ -27,7 +27,7 @@ void client_destroy(Client *self) {
 }
 
 // function reading file 'fp' into chunk 'buf' of size 's'
-static int read_chunk(FILE *fp, char *buf, int s) {
+static int read_chunk(FILE *fp, unsigned char *buf, int s, int *read_size) {
     buf[0] = '\0';
 
     int i, len;
@@ -39,16 +39,20 @@ static int read_chunk(FILE *fp, char *buf, int s) {
         return 1;
     }
 
-    char ch;
+    unsigned char ch;
+    int flag;
     for (i = 0; i < s - 1; i++) {
-        ch = fgetc(fp);
+        flag = fgetc(fp);
+        ch = flag;
         buf[i] = ch;
-        if (ch == EOF) {
+        if (flag == EOF) {
             buf[i] = '\0';
+            *read_size = i;
             return 1;
         }
     }
     buf[s - 1] = '\0';
+    *read_size = i;
     return 0;
 }
 
@@ -92,8 +96,9 @@ void client_close_all_connections(Client *self) {
 
 int client_send_file(int client_fd, const char *path) {
     const char* file_name = get_basename(path);
+    int byte_counter = 0;
     // SENDING THE DATA
-    FILE *fp = fopen(file_name, "r");
+    FILE *fp = fopen(path, "rb");
 
     printf("\nFile Name Received: %s\n", file_name);
     if (fp == NULL)
@@ -103,7 +108,7 @@ int client_send_file(int client_fd, const char *path) {
 
 #define BUF_SIZE 4096
 
-    char *buf = malloc(BUF_SIZE);
+    unsigned char *buf = malloc(BUF_SIZE);
     ssize_t sent_len = 0;
 
     Header header = {.type = {0}, .flags = {0}, .data_length = 0};
@@ -121,27 +126,33 @@ int client_send_file(int client_fd, const char *path) {
 
     strcpy(header.flags, "f");
 
-    read_chunk(fp, buf, BUF_SIZE);
+    int read_size = 0;
+    read_chunk(fp, buf, BUF_SIZE, &read_size);
     do {
         // Sending header
-        header.data_length = strlen(buf);
+        header.data_length = read_size;
         sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
         printf("%zdu (Header)\n", sent_len);
 
         // Sending data
-        sent_len = send(client_fd, buf, strlen(buf), 0);
+        sent_len = send(client_fd, buf, read_size, 0);
+        if (sent_len != read_size) {
+            printf("Sent/Buffer: %d / %d\n", sent_len, read_size);
+        }
+        byte_counter += sent_len;
         printf("%zdu (Data)\n", sent_len);
 
         // printf("%s", buf);
         // printf("%lu\n", strlen(buf));
-    } while (read_chunk(fp, buf, BUF_SIZE) == 0);
+    } while (read_chunk(fp, buf, BUF_SIZE, &read_size) == 0);
 
-    header.data_length = strlen(buf);
+    header.data_length = read_size;
     sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
     printf("%zdu (Header)\n", sent_len);
 
-    sent_len = send(client_fd, buf, strlen(buf), 0);
+    sent_len = send(client_fd, buf, read_size, 0);
     printf("%zdu (Data)\n", sent_len);
+    byte_counter += sent_len;
 
     int flag = 1;
     setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
@@ -158,6 +169,7 @@ int client_send_file(int client_fd, const char *path) {
     setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
 
     printf("\nFinished sending the file '%s'\n", file_name);
+    printf("Sent size: %d\n", byte_counter);
 
     fclose(fp);
     free(buf);
