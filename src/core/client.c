@@ -106,7 +106,7 @@ int client_send_file(int client_fd, const char *path) {
     else
         printf("\nFile Successfully opened!\n");
 
-#define BUF_SIZE 4096
+#define BUF_SIZE (4 * 1024 * 1024)
 
     unsigned char *buf = malloc(BUF_SIZE);
     ssize_t sent_len = 0;

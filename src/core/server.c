@@ -18,7 +18,7 @@ int run_server(FILE *f) {
     struct sockaddr_in address;
     int opt = 1;
     socklen_t addrlen = sizeof(address);
-#define BUF_SIZE 4096
+#define BUF_SIZE ( 4 * 1024 * 1024 )
     unsigned char buffer[BUF_SIZE] = {0};
     char *hello = "Hello from server";
 
