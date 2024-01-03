@@ -39,3 +39,11 @@ char *left_trim(char *str) {
 char *trim(char *str) {
     return left_trim(right_trim(str));
 }
+
+char *get_basename(const char *path) {
+    char *basename = strrchr(path, '/');
+    if (!basename)
+        return strdup(path);
+    else
+        return strdup(basename + 1);
+}
