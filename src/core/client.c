@@ -104,12 +104,12 @@ int client_send_file(int client_fd, const char *file_name) {
     char *buf = malloc(BUF_SIZE);
     ssize_t sent_len = 0;
 
-    Header header;
+    Header header = {.type = {0}, .flags = {0}, .data_length = 0};
     strcpy(header.type, "FILE");
     strcpy(header.flags, "s");
     header.data_length = strlen(file_name) + 1;
 
-    unsigned char header_buf[16];
+    unsigned char header_buf[16] = {0};
     printf("Sending file '%.*s'\n", 16, file_name);
     serialize_header(&header, header_buf);
     sent_len = send(client_fd, header_buf, 16, 0);
