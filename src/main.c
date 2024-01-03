@@ -8,10 +8,6 @@ int main(int argc, char *argv[]) {
         printf("Usage: %s <server or client>\n", argv[0]);
         return 1;
     }
-    if (argc != 2) {
-        printf("Usage: %s <server or client>\n", argv[0]);
-        return 1;
-    }
 
     if (strcmp(argv[1], "server") == 0) {
         return run_server(stdout);
