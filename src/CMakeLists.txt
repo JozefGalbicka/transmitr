@@ -29,6 +29,10 @@ add_library (transmitr_lib
     compression_algorithms/huffman/huffman_core.c
     core/header.c
     core/header.h
+        structures/tree/red_black_tree.h
+        structures/tree/red_black_tree_node.h
+        structures/tree/red_black_tree.c
+        structures/tree/red_black_tree_node.c
 )
 
 add_executable(transmitr
