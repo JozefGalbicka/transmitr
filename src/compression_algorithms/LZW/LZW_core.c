@@ -8,16 +8,26 @@
 #define INITIAL_OUTPUT_SIZE 8
 #define OUT_CAPACITY 1024
 
-int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, int* outputSize)
-{
+int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* outputSize) {
     unsigned char current_sequence[MAX_SYMBOLS + 1] = {0};
     size_t sequence_length = 0;
     int code = 0;
     size_t i = 0;
-
+    int oldCode = 0;
     int capacity = INITIAL_OUTPUT_SIZE;
-    int* output = calloc(capacity, sizeof(int));
+    int *output = calloc(capacity, sizeof(int));
     *outputSize = 0;
+
+    for (int u = 0; input[u] != '\0'; u++)
+    {
+        current_sequence[0] = input[u];
+        current_sequence[1] = '\0';
+        if (red_black_tree_find_node_by_value( current_sequence,dictionary->root) == NULL)
+        {
+            red_black_tree_insert(dictionary,  code, current_sequence);
+            code++;
+        }
+    }
 
     for (i = 0; input[i] != '\0'; i++)
     {
@@ -34,15 +44,24 @@ int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, int* out
                 output = realloc(output, capacity * sizeof(int));
             }
 
-            output[*outputSize] = code;
             code++;
-            (*outputSize)++;
             sequence_length = 0;
+            i--;
+            output[*outputSize] = oldCode;
+            (*outputSize)++;
         }
         else
-            sequence_length++;
-    }
+        {
+            if (*outputSize == capacity)
+            {
+                capacity *= 2;
+                output = realloc(output, capacity * sizeof(int));
+            }
+            oldCode = red_black_tree_node_get_code(red_black_tree_find_node_by_value( current_sequence,dictionary->root));
 
+            sequence_length++;
+        }
+    }
     if (sequence_length > 0) {
         current_sequence[sequence_length] = '\0';
 
@@ -64,7 +83,7 @@ int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, int* out
 }
 
 
-unsigned char* lzw_decompress_encode(const int* compressed, int compressed_size, RBTree* dictionary)
+unsigned char* lzw_decompress_encode(const int* compressed, size_t compressed_size, RBTree* dictionary)
 {
     int capacity = OUT_CAPACITY;
     unsigned char* decompressed = calloc(capacity, sizeof(unsigned char));
