@@ -32,6 +32,8 @@ add_library (transmitr_lib
         structures/tree/red_black_tree_node.h
         structures/tree/red_black_tree.c
         structures/tree/red_black_tree_node.c
+        compression_algorithms/LZW/LZW_core.c
+        compression_algorithms/LZW/LZW_core.h
 )
 
 add_executable(transmitr
