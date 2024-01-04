@@ -16,7 +16,6 @@ typedef struct RBTree
 
 void red_black_tree_init(RBTree* this);
 void red_black_tree_destroy(RBTree* this);
-void red_black_tree_postorder(RBTreeNode* node, void (*node_function)(RBTreeNode*));
 
 void red_black_tree_insert(RBTree* this,int code, const unsigned char* value);
 
