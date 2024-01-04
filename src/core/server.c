@@ -13,7 +13,7 @@
 #include <unistd.h>
 #define PORT 8080
 
-int run_server(FILE *f) {
+int run_server() {
     int server_fd, new_socket;
     struct sockaddr_in address;
     int opt = 1;
@@ -64,9 +64,11 @@ int run_server(FILE *f) {
         uint32_t buffer_index = 0;          // Current index (position) in the buffer
         unsigned char *cur = buffer;        // Current pointer (position) in the buffer
         uint32_t chunk_remaining_bytes = 0; // Remaining bytes in the chunk/message
-
         unsigned char *start = NULL;        // Pointer to start of the found data
         int start_size = 0;                 // Size of the found data
+
+        char file_name[100];
+        FILE *f;
 
         while ((valread = read(new_socket, buffer, BUF_SIZE)) != 0) {
             // https://stackoverflow.com/questions/3074824/reading-buffer-from-socket
@@ -161,10 +163,18 @@ int run_server(FILE *f) {
 
                 if (*h.flags == 's') {
                     DEBUG_MESSAGE("--START FILENAME: ");
-                    fprintf(stdout, "%.*s\n", start_size, start);
+                    fprintf(stdout, "Receiving file '%.*s'\n", start_size, start);
+                    memcpy(file_name, start, start_size <= 100 ? start_size : 100);
+                    f = fopen(file_name, "wb");
+                    if (!f) {
+                        fprintf(stderr, "Error occurred with opening file '%s' for write", file_name);
+                    }
+                    setvbuf(f, NULL, _IONBF, 0);
                 } else if (*h.flags == 'e') {
                     DEBUG_MESSAGE("--END FILENAME: ");
-                    fprintf(stdout, "%.*s\n", start_size, start);
+                    fprintf(stdout, "Successfully received file '%.*s'\n", start_size, start);
+                    fclose(f);
+                    f = NULL;
                 } else {
                     // fprintf(f, "%.*s", (int)valread - buffer_index, cur);
                     fwrite(start, 1, start_size, f);

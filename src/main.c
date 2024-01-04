@@ -10,10 +10,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (strcmp(argv[1], "server") == 0) {
-        FILE* f = fopen("output.bin", "wb");
-        setvbuf(f, NULL, _IONBF, 0);
-        return run_server(f);
-        fclose(f);
+        return run_server();
     } else if (strcmp(argv[1], "client") == 0) {
         return start_console();
     } else {
