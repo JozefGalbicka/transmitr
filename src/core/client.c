@@ -172,6 +172,7 @@ int client_send_file(int client_fd, const char *path) {
 
     fclose(fp);
     free(buf);
+    free((void *)file_name);
 
     // ioctl(client_fd, SIOCOUTQ, &bytes);
 
