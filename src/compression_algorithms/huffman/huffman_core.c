@@ -65,7 +65,7 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
     int outputIndex = EMPTY;
     int inputBitPos = EMPTY;
     int inputBytePos = EMPTY;
-    char currentCode[MAX_SYMBOLS] = {0};
+    char currentCode[MAX_SYMBOLS + 1] = {0};
     int currentCodeLength = EMPTY;
 
     while (inputBytePos < inputSize) {
