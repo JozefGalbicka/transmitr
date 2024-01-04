@@ -11,22 +11,24 @@ void red_black_tree_init(RBTree* this)
     this->size = EMPTY;
 }
 
-void red_black_tree_destroy(RBTree* this)
-{
-    red_black_tree_postorder(this->root, red_black_tree_node_destroy);
-    this->root = NULL;
-    this->size = EMPTY;
-}
 
-
-void red_black_tree_postorder(RBTreeNode* node, void (*node_function)(RBTreeNode*))
+static void red_black_tree_postorder_destroy(RBTreeNode* node, void (*node_function)(RBTreeNode*))
 {
     if (node != NULL)
     {
-        red_black_tree_postorder(red_black_tree_node_get_left_son(node), node_function);
-        red_black_tree_postorder(red_black_tree_node_get_right_son(node), node_function);
+        red_black_tree_postorder_destroy(red_black_tree_node_get_left_son(node), node_function);
+        red_black_tree_postorder_destroy(red_black_tree_node_get_right_son(node), node_function);
         node_function(node);
+        free(node);
     }
+}
+
+
+void red_black_tree_destroy(RBTree* this)
+{
+    red_black_tree_postorder_destroy(this->root, red_black_tree_node_destroy);
+    this->root = NULL;
+    this->size = EMPTY;
 }
 
 
@@ -144,7 +146,8 @@ static void red_black_tree_rules_repair(RBTree* this, RBTreeNode* node)
             }
         }
         parent = red_black_tree_node_get_parent(node);
-        grandparent = red_black_tree_node_get_parent(parent);
+        if(parent != NULL)
+            grandparent = red_black_tree_node_get_parent(parent);
     }
 
     red_black_tree_node_set_colour(this->root, black);
