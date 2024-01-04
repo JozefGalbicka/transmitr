@@ -3,8 +3,8 @@
 //
 
 #include "red_black_tree_node.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define EMPTY 0
 
@@ -97,12 +97,13 @@ void red_black_tree_node_set_code(RBTreeNode* this, int code)
 }
 
 
-void red_black_tree_node_set_value(RBTreeNode* this, unsigned char* value)
+void red_black_tree_node_set_value(RBTreeNode* this, const unsigned char* value)
 {
     if(this->value != NULL)
         free(this->value);
 
-    this->value = value;
+    this->value = calloc(strlen(value) + 1 ,sizeof(unsigned char));
+    memcpy(this->value,value,sizeof(unsigned char)*strlen(value) + 1);
 }
 
 
