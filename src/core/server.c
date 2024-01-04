@@ -5,6 +5,7 @@
 #include "../utils/macros.h"
 #include "header.h"
 
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <poll.h>
 #include <stdio.h>
@@ -155,6 +156,14 @@ static void *serve_client(void *new_socket) {
     }
 }
 
+void *get_in_addr(struct sockaddr *sa) {
+    if (sa->sa_family == AF_INET) {
+        return &(((struct sockaddr_in *)sa)->sin_addr);
+    }
+
+    return &(((struct sockaddr_in6 *)sa)->sin6_addr);
+}
+
 int run_server() {
     struct pollfd pfds[1];
     int fd_count = 0;
@@ -195,6 +204,8 @@ int run_server() {
     fd_count = 1;
 
     pthread_t thread_id;
+    struct sockaddr_storage remoteaddr;
+    char remoteIP[100];
 
     while (1) {
         int poll_count = poll(pfds, fd_count, 1000);
@@ -204,12 +215,14 @@ int run_server() {
             exit(1);
         }
         if (pfds[0].revents & POLLIN) {
-            if ((new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen)) < 0) {
+            if ((new_socket = accept(server_fd, (struct sockaddr *)&remoteaddr, &addrlen)) < 0) {
                 perror("accept");
                 exit(EXIT_FAILURE);
             }
             pthread_create(&thread_id, NULL, serve_client, &new_socket);
-            fprintf(stdout, "New client connected\n");
+            fprintf(stdout, "New client connected: %s\n",
+                    inet_ntop(remoteaddr.ss_family, get_in_addr((struct sockaddr *)&remoteaddr), remoteIP,
+                              INET6_ADDRSTRLEN));
         }
     }
     pthread_join(thread_id, NULL);
