@@ -19,8 +19,7 @@ unsigned char *serialize_header(struct Header *self, unsigned char buffer[16]) {
     return orig;
 }
 
-unsigned char *deserialize_header(struct Header *self,
-                                  unsigned char buffer[16]) {
+unsigned char *deserialize_header(struct Header *self, unsigned char buffer[16]) {
     unsigned char *orig = buffer;
 
     memcpy(self->type, buffer, 10);
@@ -33,7 +32,7 @@ unsigned char *deserialize_header(struct Header *self,
     return orig;
 }
 
-void header_print(Header* self) {
+void header_print(Header *self) {
     DEBUG_MESSAGE("TYPE: %.*s\n", 10, self->type);
     DEBUG_MESSAGE("FLAGS: %.*s\n", 2, self->flags);
     DEBUG_MESSAGE("LENGTH: %d\n", self->data_length);

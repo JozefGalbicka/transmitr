@@ -8,8 +8,8 @@
 #include <unistd.h>
 #define PORT 8080
 #define nofile "File Not Found!"
-#include "header.h"
 #include "../utils/strings.h"
+#include "header.h"
 
 #include <linux/tcp.h>
 
@@ -75,8 +75,7 @@ int client_connect(Client *self, const char *ip_addr) {
         return -1;
     }
 
-    if ((status = connect(client_fd, (struct sockaddr *)&serv_addr,
-                          sizeof(serv_addr))) < 0) {
+    if ((status = connect(client_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0) {
         printf("\nConnection Failed \n");
         return -1;
     }
@@ -95,7 +94,7 @@ void client_close_all_connections(Client *self) {
 }
 
 int client_send_file(int client_fd, const char *path) {
-    const char* file_name = get_basename(path);
+    const char *file_name = get_basename(path);
     int byte_counter = 0;
     // SENDING THE DATA
     FILE *fp = fopen(path, "rb");
@@ -174,8 +173,8 @@ int client_send_file(int client_fd, const char *path) {
     fclose(fp);
     free(buf);
 
-    //ioctl(client_fd, SIOCOUTQ, &bytes);
-    
+    // ioctl(client_fd, SIOCOUTQ, &bytes);
+
     // RECEIVE THE DATA
     // valread = read(client_fd, buffer,
     //               1024 - 1); // subtract 1 for the null terminator at the end

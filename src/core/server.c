@@ -18,7 +18,7 @@ int run_server(FILE *f) {
     struct sockaddr_in address;
     int opt = 1;
     socklen_t addrlen = sizeof(address);
-#define BUF_SIZE ( 4 * 1024 * 1024 )
+#define BUF_SIZE (4 * 1024 * 1024)
     unsigned char buffer[BUF_SIZE] = {0};
     char *hello = "Hello from server";
 
@@ -140,7 +140,7 @@ int run_server(FILE *f) {
                         DEBUG_MESSAGE("--END FILENAME: ");
                         fprintf(stdout, "%.*s\n", (int)valread - buffer_index, cur);
                     } else {
-                        //fprintf(f, "%.*s", (int)valread - buffer_index, cur);
+                        // fprintf(f, "%.*s", (int)valread - buffer_index, cur);
                         fwrite(cur, 1, valread - buffer_index, f);
                     }
                     chunk_remaining_bytes -= (valread - buffer_index);
@@ -158,7 +158,7 @@ int run_server(FILE *f) {
                         DEBUG_MESSAGE("--END FILENAME: ");
                         fprintf(stdout, "%.*s", chunk_remaining_bytes, cur);
                     } else {
-                        //fprintf(f, "%.*s", chunk_remaining_bytes, cur);
+                        // fprintf(f, "%.*s", chunk_remaining_bytes, cur);
                         fwrite(cur, 1, chunk_remaining_bytes, f);
                     }
                     cur += chunk_remaining_bytes;
