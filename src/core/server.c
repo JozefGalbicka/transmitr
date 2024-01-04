@@ -65,6 +65,9 @@ int run_server(FILE *f) {
         unsigned char *cur = buffer;        // Current pointer (position) in the buffer
         uint32_t chunk_remaining_bytes = 0; // Remaining bytes in the chunk/message
 
+        unsigned char *start = NULL;        // Pointer to start of the found data
+        int start_size = 0;                 // Size of the found data
+
         while ((valread = read(new_socket, buffer, BUF_SIZE)) != 0) {
             // https://stackoverflow.com/questions/3074824/reading-buffer-from-socket
             // buffer[valread] = 0;
@@ -73,7 +76,7 @@ int run_server(FILE *f) {
             cur = buffer;
             buffer_index = 0;
 
-            DEBUG_MESSAGE("\n--%zd B\n", valread);
+            DEBUG_MESSAGE("\n--- %zd B Received\n", valread);
             while (buffer_index < valread) { // while != last index
                 // DEBUG_MESSAGE("--New-cycle\n");
 
@@ -131,18 +134,10 @@ int run_server(FILE *f) {
                     break;
                 }
 
-                // rest of the buffer is block of data
-                if (chunk_remaining_bytes >= (valread - buffer_index)) { // rest of the buffer is data
-                    if (*h.flags == 's') {
-                        DEBUG_MESSAGE("--START FILENAME: ");
-                        fprintf(stdout, "%.*s\n", (int)valread - buffer_index, cur);
-                    } else if (*h.flags == 'e') {
-                        DEBUG_MESSAGE("--END FILENAME: ");
-                        fprintf(stdout, "%.*s\n", (int)valread - buffer_index, cur);
-                    } else {
-                        // fprintf(f, "%.*s", (int)valread - buffer_index, cur);
-                        fwrite(cur, 1, valread - buffer_index, f);
-                    }
+                if (chunk_remaining_bytes >= (valread - buffer_index)) { // rest of the buffer is actual data
+                    start = cur;
+                    start_size = valread - buffer_index;
+
                     chunk_remaining_bytes -= (valread - buffer_index);
                     buffer_index += (valread - buffer_index);
 
@@ -151,25 +146,28 @@ int run_server(FILE *f) {
                     DEBUG_MESSAGE("buffer_index: %d\n", buffer_index);
                     DEBUG_MESSAGE("valread: %zd\n\n", valread);
                 } else { // there is another header in the buffer somewhere
-                    if (*h.flags == 's') {
-                        DEBUG_MESSAGE("--START FILENAME: ");
-                        fprintf(stdout, "%.*s", chunk_remaining_bytes, cur);
-                    } else if (*h.flags == 'e') {
-                        DEBUG_MESSAGE("--END FILENAME: ");
-                        fprintf(stdout, "%.*s", chunk_remaining_bytes, cur);
-                    } else {
-                        // fprintf(f, "%.*s", chunk_remaining_bytes, cur);
-                        fwrite(cur, 1, chunk_remaining_bytes, f);
-                    }
+                    start = cur;
+                    start_size = chunk_remaining_bytes;
+
                     cur += chunk_remaining_bytes;
                     buffer_index += chunk_remaining_bytes; // == valread
-                                                           //
                     chunk_remaining_bytes = 0;
 
                     DEBUG_MESSAGE("\nPARTIAL BUFFER USED\n");
                     DEBUG_MESSAGE("chunk_remaining: %d\n", chunk_remaining_bytes);
                     DEBUG_MESSAGE("buffer_index: %d\n", buffer_index);
                     DEBUG_MESSAGE("valread: %d\n\n", (int)valread);
+                }
+
+                if (*h.flags == 's') {
+                    DEBUG_MESSAGE("--START FILENAME: ");
+                    fprintf(stdout, "%.*s\n", start_size, start);
+                } else if (*h.flags == 'e') {
+                    DEBUG_MESSAGE("--END FILENAME: ");
+                    fprintf(stdout, "%.*s\n", start_size, start);
+                } else {
+                    // fprintf(f, "%.*s", (int)valread - buffer_index, cur);
+                    fwrite(start, 1, start_size, f);
                 }
 
                 if (chunk_remaining_bytes == 0) {
