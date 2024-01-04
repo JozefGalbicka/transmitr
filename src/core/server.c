@@ -164,7 +164,7 @@ void *get_in_addr(struct sockaddr *sa) {
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-int run_server() {
+void *run_server(void *keep_running_v) {
     struct pollfd pfds[1];
     int fd_count = 0;
 
@@ -207,7 +207,7 @@ int run_server() {
     struct sockaddr_storage remoteaddr;
     char remoteIP[100];
 
-    while (1) {
+    while (*(_Bool *)keep_running_v) {
         int poll_count = poll(pfds, fd_count, 1000);
 
         if (poll_count == -1) {

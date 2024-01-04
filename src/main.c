@@ -33,12 +33,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (client) {
-        return start_console();
+    if (client + server == 0) {
+        server = 1;
+        client = 1;
     }
-    if (server) {
-        return run_server();
-    }
+
+
+    return start_console(server, client);
 
     if (errflg) {
         fprintf(stderr, "\n");
