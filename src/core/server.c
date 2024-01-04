@@ -6,6 +6,7 @@
 #include "header.h"
 
 #include <netinet/in.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -155,6 +156,9 @@ static void *serve_client(void *new_socket) {
 }
 
 int run_server() {
+    struct pollfd pfds[1];
+    int fd_count = 0;
+
     int server_fd, new_socket;
     struct sockaddr_in address;
     int opt = 1;
@@ -186,13 +190,27 @@ int run_server() {
         exit(EXIT_FAILURE);
     }
 
+    pfds[0].fd = server_fd;
+    pfds[0].events = POLLIN;
+    fd_count = 1;
+
     pthread_t thread_id;
+
     while (1) {
-        if ((new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen)) < 0) {
-            perror("accept");
-            exit(EXIT_FAILURE);
+        int poll_count = poll(pfds, fd_count, 1000);
+
+        if (poll_count == -1) {
+            perror("poll");
+            exit(1);
         }
-        pthread_create(&thread_id, NULL, serve_client, &new_socket);
+        if (pfds[0].revents & POLLIN) {
+            if ((new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen)) < 0) {
+                perror("accept");
+                exit(EXIT_FAILURE);
+            }
+            pthread_create(&thread_id, NULL, serve_client, &new_socket);
+            fprintf(stdout, "New client connected\n");
+        }
     }
     pthread_join(thread_id, NULL);
 
