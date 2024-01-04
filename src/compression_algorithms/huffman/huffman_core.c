@@ -72,8 +72,7 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
         if (inputBytePos == inputSize - 1 && inputBitPos >= validBitsInLastByte)
             break;
 
-        currentCode[currentCodeLength++] =
-            (input[inputBytePos] & (1 << (7 - inputBitPos))) ? '1' : '0';
+        currentCode[currentCodeLength++] = (input[inputBytePos] & (1 << (7 - inputBitPos))) ? '1' : '0';
         currentCode[currentCodeLength] = '\0';
 
         for (int i = 0; i < MAX_SYMBOLS; i++) {

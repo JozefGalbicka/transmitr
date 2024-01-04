@@ -17,15 +17,13 @@ typedef struct RBTree
 void red_black_tree_init(RBTree* this);
 void red_black_tree_destroy(RBTree* this);
 void red_black_tree_postorder(RBTreeNode* node, void (*node_function)(RBTreeNode*));
-void red_black_tree_left_rotation(RBTree* this, RBTreeNode* node);
-void red_black_tree_right_rotation(RBTree* this, RBTreeNode* node);
 
-void red_black_tree_insert(RBTree* this,int code,unsigned char* value);
+void red_black_tree_insert(RBTree* this,int code, const unsigned char* value);
 
-RBTreeNode* red_black_tree_get_node(RBTree* this, unsigned char* value);
+RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* subRoot);
 
 RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node);
-
+RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code);
 
 
 #endif // TRANSMITR_RED_BLACK_TREE_H

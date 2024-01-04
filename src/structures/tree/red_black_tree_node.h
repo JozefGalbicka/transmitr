@@ -19,7 +19,6 @@ typedef struct RBTreeNode
     unsigned char* value;
     int code;
     Colour nodeColour;
-
 }RBTreeNode;
 
 void red_black_tree_node_init(RBTreeNode* this);
@@ -38,7 +37,7 @@ void red_black_tree_node_recolour(RBTreeNode* this);
 
 void red_black_tree_node_set_colour(RBTreeNode* this, Colour nodeColour);
 void red_black_tree_node_set_code(RBTreeNode* this, int code);
-void red_black_tree_node_set_value(RBTreeNode* this, unsigned char* value); //plytka kopia
+void red_black_tree_node_set_value(RBTreeNode* this, const unsigned char* value);
 
 Colour red_black_tree_node_get_colour(RBTreeNode* this);
 int red_black_tree_node_get_code(RBTreeNode* this);

@@ -2,6 +2,7 @@
 // Created by dominik on 1/3/24.
 //
 #include "red_black_tree.h"
+#include <string.h>
 #define EMPTY 0
 
 void red_black_tree_init(RBTree* this)
@@ -9,8 +10,6 @@ void red_black_tree_init(RBTree* this)
     this->root = NULL;
     this->size = EMPTY;
 }
-
-
 
 void red_black_tree_destroy(RBTree* this)
 {
@@ -31,7 +30,7 @@ void red_black_tree_postorder(RBTreeNode* node, void (*node_function)(RBTreeNode
 }
 
 
-void red_black_tree_left_rotation(RBTree* this, RBTreeNode* node)
+static void red_black_tree_left_rotation(RBTree* this, RBTreeNode* node)
 {
     if(node == NULL || red_black_tree_node_get_right_son(node) == NULL)
         return;
@@ -59,7 +58,7 @@ void red_black_tree_left_rotation(RBTree* this, RBTreeNode* node)
 }
 
 
-void red_black_tree_right_rotation(RBTree* this, RBTreeNode* node)
+static void red_black_tree_right_rotation(RBTree* this, RBTreeNode* node)
 {
     if (node == NULL || red_black_tree_node_get_left_son(node) == NULL)
         return;
@@ -84,19 +83,207 @@ void red_black_tree_right_rotation(RBTree* this, RBTreeNode* node)
     red_black_tree_node_set_parent(node, newTop);
 }
 
-/*
 
-void red_black_tree_insert(RBTree* this,int code,unsigned char* value)
+static void red_black_tree_rules_repair(RBTree* this, RBTreeNode* node)
 {
+    RBTreeNode *parent = red_black_tree_node_get_parent(node);
+    RBTreeNode *grandparent = NULL;
+    if(parent != NULL)
+        grandparent = red_black_tree_node_get_parent(parent);
 
+    while (parent != NULL && red_black_tree_node_get_colour(parent) == red && grandparent != NULL)
+    {
+        if (parent == red_black_tree_node_get_left_son(grandparent))
+        {
+            RBTreeNode *uncle = red_black_tree_node_get_right_son(grandparent);
+
+            if (uncle != NULL && red_black_tree_node_get_colour(uncle) == red)
+            {
+                red_black_tree_node_recolour(parent);
+                red_black_tree_node_recolour(uncle);
+                red_black_tree_node_recolour(grandparent);
+                node = grandparent;
+            }
+            else
+            {
+                if (node == red_black_tree_node_get_right_son(parent))
+                {
+                    red_black_tree_left_rotation(this, parent);
+                    node = parent;
+                    parent = red_black_tree_node_get_parent(node);
+                }
+
+                red_black_tree_node_recolour(parent);
+                red_black_tree_node_recolour(grandparent);
+                red_black_tree_right_rotation(this, grandparent);
+            }
+        }
+        else
+        {
+            RBTreeNode *uncle = red_black_tree_node_get_left_son(grandparent);
+
+            if (uncle != NULL && red_black_tree_node_get_colour(uncle) == red)
+            {
+                red_black_tree_node_recolour(parent);
+                red_black_tree_node_recolour(uncle);
+                red_black_tree_node_recolour(grandparent);
+                node = grandparent;
+            }
+            else
+            {
+                if (node == red_black_tree_node_get_left_son(parent))
+                {
+                    red_black_tree_right_rotation(this, parent);
+                    node = parent;
+                    parent = red_black_tree_node_get_parent(node);
+                }
+
+                red_black_tree_node_recolour(parent);
+                red_black_tree_node_recolour(grandparent);
+                red_black_tree_left_rotation(this, grandparent);
+            }
+        }
+        parent = red_black_tree_node_get_parent(node);
+        grandparent = red_black_tree_node_get_parent(parent);
+    }
+
+    red_black_tree_node_set_colour(this->root, black);
 }
 
-RBTreeNode* red_black_tree_get_node(RBTree* this, unsigned char* value)
-{
 
+void red_black_tree_insert(RBTree* this,int code,const unsigned char* value)
+{
+    RBTreeNode* newNode = malloc(sizeof(RBTreeNode));
+    red_black_tree_node_init(newNode);
+    red_black_tree_node_set_code(newNode, code);
+    red_black_tree_node_set_value(newNode, value);
+    red_black_tree_node_set_colour(newNode, red);
+
+    RBTreeNode* potFather = NULL;
+    RBTreeNode* potSon = this->root;
+
+    while (potSon != NULL)
+    {
+        potFather = potSon;
+        if (red_black_tree_node_get_code(newNode) < red_black_tree_node_get_code(potSon))
+            potSon = red_black_tree_node_get_left_son(potSon);
+        else
+            potSon = red_black_tree_node_get_right_son(potSon);
+    }
+
+    red_black_tree_node_set_parent(newNode, potFather);
+
+    if (potFather == NULL)
+        this->root = newNode;
+    else if (red_black_tree_node_get_code(newNode) < red_black_tree_node_get_code(potFather))
+        red_black_tree_node_set_left_son(potFather, newNode);
+    else
+        red_black_tree_node_set_right_son(potFather, newNode);
+
+    red_black_tree_rules_repair(this, newNode);
 }
 
-RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node)
-{
 
-}*/
+static RBTreeNode* red_black_tree_get_minimum_node(RBTreeNode* node)
+{
+    while (red_black_tree_node_get_left_son(node) != NULL)
+    {
+        node = red_black_tree_node_get_left_son(node);
+    }
+    return node;
+}
+
+
+static void red_black_tree_node_transplant(RBTree* this, RBTreeNode* nodeA, RBTreeNode* nodeB) {
+    if (red_black_tree_node_get_parent(nodeA) == NULL)
+        this->root = nodeB;
+    else if (nodeA == red_black_tree_node_get_left_son(red_black_tree_node_get_parent(nodeA)))
+        red_black_tree_node_set_left_son(red_black_tree_node_get_parent(nodeA),nodeB);
+    else
+        red_black_tree_node_set_right_son(red_black_tree_node_get_parent(nodeA), nodeB);
+
+    if (nodeB != NULL)
+        red_black_tree_node_set_parent(nodeB, red_black_tree_node_get_parent(nodeA));
+}
+
+
+RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node) {
+    if (node == NULL)
+        return NULL;
+
+    RBTreeNode* y = node;
+    RBTreeNode* x;
+    Colour originalColor = red_black_tree_node_get_colour(y);
+
+    if (red_black_tree_node_get_left_son(node) == NULL)
+    {
+        x = red_black_tree_node_get_right_son(node);
+        red_black_tree_node_transplant(this, node, x);
+    }
+    else if (red_black_tree_node_get_right_son(node) == NULL)
+    {
+        x = red_black_tree_node_get_left_son(node);
+        red_black_tree_node_transplant(this, node, x);
+    }
+    else
+    {
+        y = red_black_tree_get_minimum_node(red_black_tree_node_get_right_son(node));
+        originalColor = red_black_tree_node_get_colour(y);
+        x = red_black_tree_node_get_right_son(y);
+
+        if (red_black_tree_node_get_parent(y) != node)
+        {
+            red_black_tree_node_transplant(this, y, x);
+            red_black_tree_node_set_right_son(y, red_black_tree_node_get_right_son(node));
+
+            if (red_black_tree_node_get_right_son(y) != NULL)
+                red_black_tree_node_set_parent(red_black_tree_node_get_right_son(y), y);
+        }
+
+        red_black_tree_node_transplant(this, node, y);
+        red_black_tree_node_set_left_son(y, red_black_tree_node_get_left_son(node));
+
+        if (red_black_tree_node_get_left_son(y) != NULL)
+            red_black_tree_node_set_parent(red_black_tree_node_get_left_son(y), y);
+
+        red_black_tree_node_set_colour(y, originalColor);
+    }
+
+    if (originalColor == black)
+        red_black_tree_rules_repair(this, x);
+
+    return node;
+}
+
+
+RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* subRoot)
+{
+    if (subRoot == NULL)
+        return NULL;
+
+    if (strcmp(red_black_tree_node_get_value(subRoot), value) == 0)
+        return subRoot;
+
+    RBTreeNode* foundNode = red_black_tree_find_node_by_value(value, red_black_tree_node_get_left_son(subRoot));
+
+    if (foundNode != NULL)
+        return foundNode;
+
+    return red_black_tree_find_node_by_value(value, red_black_tree_node_get_right_son(subRoot));
+}
+
+RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code) {
+    RBTreeNode* current = this->root;
+
+    while (current != NULL)
+    {
+        if (red_black_tree_node_get_code(current) == code)
+            return current;
+        else if (code < red_black_tree_node_get_code(current))
+            current = red_black_tree_node_get_left_son(current);
+        else
+            current = red_black_tree_node_get_right_son(current);
+    }
+
+    return NULL;
+}
