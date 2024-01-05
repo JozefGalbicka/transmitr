@@ -47,6 +47,9 @@ int start_console(_Bool server, _Bool client) {
                     if (client) {
                         client_init(&cl);
                         localhost_fd = client_connect(&cl, input + 9);
+                        if (localhost_fd == -1) {
+                            client_destroy(&cl);
+                        }
                     }
                 } else {
                     client_send_file(localhost_fd, trim(input));
