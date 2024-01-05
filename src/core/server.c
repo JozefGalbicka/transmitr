@@ -19,7 +19,8 @@
 static void *serve_client(void *cti_v) {
 #define BUF_SIZE (4 * 1024 * 1024)
     ClientThreadInfo *cti = (ClientThreadInfo *)(cti_v);
-    unsigned char buffer[BUF_SIZE] = {0};
+    unsigned char *buffer = malloc(BUF_SIZE + 1);
+    memset(buffer, 0, BUF_SIZE + 1);
 
     Header h;        // Used to store the header
     _Bool first = 1; // Denotes whether it's time to read new header
@@ -154,6 +155,7 @@ static void *serve_client(void *cti_v) {
             }
         }
     }
+    free(buffer);
     cti->running = 0;
     return NULL;
 }
