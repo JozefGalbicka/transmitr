@@ -3,13 +3,15 @@
 //
 
 #include "red_black_tree_node.h"
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
 
 #define EMPTY 0
 
 void red_black_tree_node_init(RBTreeNode* this)
 {
+    this->value_size = EMPTY;
     this->value = NULL;
     this->nodeColour = black;
     this->code = EMPTY;
@@ -25,6 +27,7 @@ void red_black_tree_node_destroy(RBTreeNode* this)
         free(this->value);
 
     this->value = NULL;
+    this->value_size = EMPTY;
     this->nodeColour = black;
     this->code = EMPTY;
     this->parent = NULL;
@@ -97,13 +100,17 @@ void red_black_tree_node_set_code(RBTreeNode* this, int code)
 }
 
 
-void red_black_tree_node_set_value(RBTreeNode* this, const unsigned char* value)
+void red_black_tree_node_set_value(RBTreeNode* this, const unsigned char* value, size_t value_size)
 {
     if(this->value != NULL)
         free(this->value);
 
-    this->value = calloc(strlen(value) + 1 ,sizeof(unsigned char));
-    memcpy(this->value,value,sizeof(unsigned char)*strlen(value) + 1);
+    this->value = calloc(value_size,sizeof(unsigned char));
+    for(size_t i = 0; i < value_size; i++)
+    {
+        this->value[i] = value[i];
+    }
+    this->value_size = value_size;
 }
 
 
@@ -122,4 +129,9 @@ int red_black_tree_node_get_code(RBTreeNode* this)
 unsigned char* red_black_tree_node_get_value(RBTreeNode* this)
 {
     return this->value;
+}
+
+size_t red_black_tree_node_get_value_size(RBTreeNode* this)
+{
+    return this->value_size;
 }

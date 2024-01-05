@@ -17,9 +17,9 @@ typedef struct RBTree
 void red_black_tree_init(RBTree* this);
 void red_black_tree_destroy(RBTree* this);
 
-void red_black_tree_insert(RBTree* this,int code, const unsigned char* value);
+void red_black_tree_insert(RBTree* this,int code, const unsigned char* value,size_t value_size);
 
-RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* subRoot);
+RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* subRoot, size_t value_size);
 
 RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node);
 RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code);
