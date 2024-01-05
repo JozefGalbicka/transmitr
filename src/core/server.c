@@ -2,6 +2,7 @@
 // Server side C/C++ program to demonstrate Socket
 // programming
 #include "server.h"
+#include "../structures/list/array_list.h"
 #include "../utils/macros.h"
 #include "header.h"
 
@@ -11,14 +12,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define PORT 8080
 #include <sys/socket.h>
 #include <unistd.h>
-#define PORT 8080
-#include <pthread.h>
 
-static void *serve_client(void *new_socket) {
+static void *serve_client(void *cti_v) {
 #define BUF_SIZE (4 * 1024 * 1024)
-    int client_fd = *(int *)(new_socket);
+    ClientThreadInfo *cti = (ClientThreadInfo *)(cti_v);
     unsigned char buffer[BUF_SIZE] = {0};
 
     Header h;        // Used to store the header
@@ -39,7 +39,7 @@ static void *serve_client(void *new_socket) {
     char file_name[100];
     FILE *f;
 
-    while ((valread = read(client_fd, buffer, BUF_SIZE)) != 0) {
+    while ((valread = read(cti->client_fd, buffer, BUF_SIZE)) != 0) {
         // https://stackoverflow.com/questions/3074824/reading-buffer-from-socket
         // buffer[valread] = 0;
 
@@ -154,6 +154,8 @@ static void *serve_client(void *new_socket) {
             }
         }
     }
+    cti->running = 0;
+    return NULL;
 }
 
 void *get_in_addr(struct sockaddr *sa) {
@@ -207,6 +209,11 @@ void *run_server(void *keep_running_v) {
     struct sockaddr_storage remoteaddr;
     char remoteIP[100];
 
+    ArrayList client_thread_infos;
+    ClientThreadInfo *cti = NULL;
+
+    array_list_init(&client_thread_infos, sizeof(ClientThreadInfo **));
+
     while (*(_Bool *)keep_running_v) {
         int poll_count = poll(pfds, fd_count, 1000);
 
@@ -219,17 +226,37 @@ void *run_server(void *keep_running_v) {
                 perror("accept");
                 exit(EXIT_FAILURE);
             }
-            pthread_create(&thread_id, NULL, serve_client, &new_socket);
+            cti = malloc(sizeof(ClientThreadInfo));
+            cti->running = 1;
+            cti->client_fd = new_socket;
+            pthread_create(&thread_id, NULL, serve_client, cti);
+            cti->thread_id = thread_id;
+
+            array_list_add(&client_thread_infos, &cti);
+            cti = NULL;
+
             fprintf(stdout, "New client connected: %s\n",
                     inet_ntop(remoteaddr.ss_family, get_in_addr((struct sockaddr *)&remoteaddr), remoteIP,
                               INET6_ADDRSTRLEN));
         }
     }
-    pthread_join(thread_id, NULL);
 
-    // closing the connected socket
-    close(new_socket);
-    // closing the listening socket
+    // Waiting for every client thread to exit
+    ArrayListIterator it;
+    void *tmp;
+    array_list_iterator_init(&it, &client_thread_infos);
+    while (array_list_iterator_has_next(&it)) {
+        fprintf(stderr, "Closing client thread..\n");
+        tmp = array_list_iterator_move_next(&it);
+        cti = *(ClientThreadInfo **)tmp;
+        pthread_join(cti->thread_id, NULL);
+        free(cti);
+    }
+    array_list_iterator_destroy(&it);
+
+    array_list_destroy(&client_thread_infos);
+
+    //  closing the listening socket
     close(server_fd);
     return 0;
 }
