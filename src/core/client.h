@@ -9,9 +9,9 @@ typedef struct Client {
 void client_init(Client *self);
 void client_destroy(Client *self);
 
-void *client_thread_send_health_checks(void *self_v);
-
 int client_connect(Client *self, const char *ip_addr);
 void client_close_all_connections(Client *self);
 
+
+void client_send_file_to_all(Client *self, const char *path);
 int client_send_file(int client_fd, const char *path);

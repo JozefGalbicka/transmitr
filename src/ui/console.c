@@ -16,12 +16,15 @@ int start_console(_Bool server, _Bool client) {
     _Bool keep_running = 1;
 
     Client cl;
-    int localhost_fd;
+    int last_fd;
 
     pthread_t thread_id;
 
     if (server) {
         pthread_create(&thread_id, NULL, run_server, &keep_running);
+    }
+    if (client) {
+        client_init(&cl);
     }
 
     printf("Please specify filename to send (write 'exit'/'q' to close the app)\n");
@@ -44,15 +47,9 @@ int start_console(_Bool server, _Bool client) {
             if (client) {
                 if (strncmp(input, ":connect ", 9) == 0) {
                     printf("Connecting to '%s'\n", input + 9);
-                    if (client) {
-                        client_init(&cl);
-                        localhost_fd = client_connect(&cl, input + 9);
-                        if (localhost_fd == -1) {
-                            client_destroy(&cl);
-                        }
-                    }
+                    last_fd = client_connect(&cl, input + 9);
                 } else {
-                    client_send_file(localhost_fd, trim(input));
+                    client_send_file_to_all(&cl, trim(input));
                 }
             }
         }

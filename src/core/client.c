@@ -93,6 +93,25 @@ void client_close_all_connections(Client *self) {
     array_list_iterator_destroy(&it);
 }
 
+void client_send_file_to_all(Client *self, const char *path) {
+    ArrayListIterator it;
+    array_list_iterator_init(&it, self->servers);
+    while (array_list_iterator_has_next(&it)) {
+        void *tmp = array_list_iterator_move_next(&it);
+
+        struct sockaddr_in addr;
+        socklen_t addr_size = sizeof(struct sockaddr_in);
+        int res = getpeername(*(int *)tmp, (struct sockaddr *)&addr, &addr_size);
+        char clientip[20];
+        strcpy(clientip, inet_ntoa(addr.sin_addr));
+        printf("Sending to server '%s'", clientip);
+
+        client_send_file(*(int *)tmp, path);
+    }
+    array_list_iterator_destroy(&it);
+    
+}
+
 int client_send_file(int client_fd, const char *path) {
     const char *file_name = get_basename(path);
     int byte_counter = 0;
