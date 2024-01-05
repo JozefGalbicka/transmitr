@@ -4,11 +4,12 @@
 
 #include "LZW_core.h"
 
-#define MAX_SYMBOLS 256
+#define MAX_SYMBOLS (4*1024*1024)
 #define INITIAL_OUTPUT_SIZE 8
 #define OUT_CAPACITY 1024
+#define SINGLE_CHAR 1
 
-int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* outputSize) {
+int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* outputSize, size_t input_size) {
     unsigned char current_sequence[MAX_SYMBOLS + 1] = {0};
     size_t sequence_length = 0;
     int code = 0;
@@ -18,25 +19,24 @@ int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* 
     int *output = calloc(capacity, sizeof(int));
     *outputSize = 0;
 
-    for (int u = 0; input[u] != '\0'; u++)
+    for (size_t u = 0; u < input_size; u++)
     {
         current_sequence[0] = input[u];
-        current_sequence[1] = '\0';
-        if (red_black_tree_find_node_by_value( current_sequence,dictionary->root) == NULL)
+        if (red_black_tree_find_node_by_value( current_sequence,dictionary->root, SINGLE_CHAR ) == NULL)
         {
-            red_black_tree_insert(dictionary,  code, current_sequence);
+            red_black_tree_insert(dictionary,  code, current_sequence, SINGLE_CHAR);
             code++;
         }
     }
 
-    for (i = 0; input[i] != '\0'; i++)
+    for (i = 0; i < input_size; i++)
     {
         current_sequence[sequence_length] = input[i];
-        current_sequence[sequence_length + 1] = '\0';
 
-        if (red_black_tree_find_node_by_value( current_sequence,dictionary->root) == NULL)
+
+        if (red_black_tree_find_node_by_value( current_sequence,dictionary->root, sequence_length + 1) == NULL)
         {
-            red_black_tree_insert(dictionary,  code, current_sequence);
+            red_black_tree_insert(dictionary,  code, current_sequence,sequence_length + 1);
 
             if (*outputSize == capacity)
             {
@@ -57,26 +57,26 @@ int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* 
                 capacity *= 2;
                 output = realloc(output, capacity * sizeof(int));
             }
-            oldCode = red_black_tree_node_get_code(red_black_tree_find_node_by_value( current_sequence,dictionary->root));
+            oldCode = red_black_tree_node_get_code(red_black_tree_find_node_by_value( current_sequence,dictionary->root,sequence_length+1));
 
             sequence_length++;
         }
     }
-    if (sequence_length > 0) {
-        current_sequence[sequence_length] = '\0';
-
+    if (sequence_length > 0)
+    {
         if (*outputSize == capacity)
         {
             capacity *= 2;
             output = realloc(output, capacity * sizeof(int));
         }
 
-        if (red_black_tree_find_node_by_value(current_sequence, dictionary->root) == NULL) {
-            red_black_tree_insert(dictionary, code, current_sequence);
+        if (red_black_tree_find_node_by_value(current_sequence, dictionary->root,sequence_length) == NULL)
+        {
+            red_black_tree_insert(dictionary, code, current_sequence,sequence_length);
             output[*outputSize] = code;
         }
         else
-            output[*outputSize] = red_black_tree_node_get_code(red_black_tree_find_node_by_value(current_sequence, dictionary->root));
+            output[*outputSize] = red_black_tree_node_get_code(red_black_tree_find_node_by_value(current_sequence, dictionary->root,sequence_length));
         (*outputSize)++;
     }
     return output;
@@ -88,32 +88,35 @@ unsigned char* lzw_decompress_encode(const int* compressed, size_t compressed_si
     int capacity = OUT_CAPACITY;
     unsigned char* decompressed = calloc(capacity, sizeof(unsigned char));
 
-    int decompressed_size = 0;
+    size_t decompressed_size = 0;
     int code = 0;
     unsigned char* entry;
 
 
-    for (int i = 0; i < compressed_size; i++)
-    {
+    for (int i = 0; i < compressed_size; i++) {
         code = compressed[i];
-        RBTreeNode* tmpValueNode =  red_black_tree_find_by_code(dictionary, code);
-        if(tmpValueNode == NULL)
-        {
-           fprintf(stderr,"Poskodeny subor!!");
-           return NULL;
+        RBTreeNode *tmpValueNode = red_black_tree_find_by_code(dictionary, code);
+        if (tmpValueNode == NULL) {
+            fprintf(stderr, "Poskodeny subor!!");
+            return NULL;
         }
         entry = red_black_tree_node_get_value(tmpValueNode);
 
-        if (decompressed_size + strlen(entry) >= capacity)
-        {
+        if (decompressed_size + red_black_tree_node_get_value_size(tmpValueNode) >= capacity) {
             capacity *= 2;
-            unsigned char* temp = realloc(decompressed, capacity);
+            unsigned char *temp = realloc(decompressed, capacity);
 
             decompressed = temp;
         }
 
-        strcat(decompressed, entry);
-        decompressed_size += strlen(entry);
+        size_t x = decompressed_size;
+        for (size_t z = 0; z < red_black_tree_node_get_value_size(tmpValueNode);z++)
+        {
+            decompressed[x] = entry[z];
+            x++;
+        }
+
+        decompressed_size += red_black_tree_node_get_value_size(tmpValueNode);//strlen(entry);
     }
 
     return decompressed;

@@ -5,6 +5,8 @@
 #ifndef TRANSMITR_RED_BLACK_TREE_NODE_H
 #define TRANSMITR_RED_BLACK_TREE_NODE_H
 
+#include <stdlib.h>
+
 typedef enum Colour
 {
     red,
@@ -13,6 +15,7 @@ typedef enum Colour
 
 typedef struct RBTreeNode
 {
+    size_t value_size;
     struct RBTreeNode* parent;
     struct RBTreeNode* left;
     struct RBTreeNode* right;
@@ -37,10 +40,12 @@ void red_black_tree_node_recolour(RBTreeNode* this);
 
 void red_black_tree_node_set_colour(RBTreeNode* this, Colour nodeColour);
 void red_black_tree_node_set_code(RBTreeNode* this, int code);
-void red_black_tree_node_set_value(RBTreeNode* this, const unsigned char* value);
+void red_black_tree_node_set_value(RBTreeNode* this, const unsigned char* value, size_t value_size);
 
 Colour red_black_tree_node_get_colour(RBTreeNode* this);
 int red_black_tree_node_get_code(RBTreeNode* this);
 unsigned char* red_black_tree_node_get_value(RBTreeNode* this);
+size_t red_black_tree_node_get_value_size(RBTreeNode* this);
+
 
 #endif // TRANSMITR_RED_BLACK_TREE_NODE_H

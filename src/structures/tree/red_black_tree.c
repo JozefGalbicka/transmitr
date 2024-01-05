@@ -2,7 +2,8 @@
 // Created by dominik on 1/3/24.
 //
 #include "red_black_tree.h"
-#include <string.h>
+#include <stdio.h>
+
 #define EMPTY 0
 
 void red_black_tree_init(RBTree* this)
@@ -154,13 +155,14 @@ static void red_black_tree_rules_repair(RBTree* this, RBTreeNode* node)
 }
 
 
-void red_black_tree_insert(RBTree* this,int code,const unsigned char* value)
+void red_black_tree_insert(RBTree* this,int code,const unsigned char* value,size_t value_size)
 {
     RBTreeNode* newNode = malloc(sizeof(RBTreeNode));
     red_black_tree_node_init(newNode);
     red_black_tree_node_set_code(newNode, code);
-    red_black_tree_node_set_value(newNode, value);
+    red_black_tree_node_set_value(newNode, value, value_size);
     red_black_tree_node_set_colour(newNode, red);
+
 
     RBTreeNode* potFather = NULL;
     RBTreeNode* potSon = this->root;
@@ -259,20 +261,32 @@ RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node) {
 }
 
 
-RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* subRoot)
+RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* subRoot, size_t value_size)
 {
     if (subRoot == NULL)
         return NULL;
 
-    if (strcmp(red_black_tree_node_get_value(subRoot), value) == 0)
-        return subRoot;
+    unsigned char *tmp = red_black_tree_node_get_value(subRoot);
+    if (red_black_tree_node_get_value_size(subRoot) == value_size)
+    {
+        size_t i;
+        for (i = 0; i < value_size; i++)
+        {
+            if (tmp[i] != value[i])
+                break;
+        }
 
-    RBTreeNode* foundNode = red_black_tree_find_node_by_value(value, red_black_tree_node_get_left_son(subRoot));
+        if(i == value_size)
+        return subRoot;
+    }
+
+
+    RBTreeNode* foundNode = red_black_tree_find_node_by_value(value, red_black_tree_node_get_left_son(subRoot),value_size);
 
     if (foundNode != NULL)
         return foundNode;
 
-    return red_black_tree_find_node_by_value(value, red_black_tree_node_get_right_son(subRoot));
+    return red_black_tree_find_node_by_value(value, red_black_tree_node_get_right_son(subRoot),value_size);
 }
 
 RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code) {
