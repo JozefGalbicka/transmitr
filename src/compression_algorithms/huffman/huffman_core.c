@@ -71,6 +71,7 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
     char currentCode[MAX_SYMBOLS ] = {0};
     short currentCodeLength = EMPTY;
 
+
     while (inputBytePos < inputSize)
     {
         if (inputBytePos == inputSize - 1 && inputBitPos >= validBitsInLastByte)
@@ -78,7 +79,7 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
 
         currentCode[currentCodeLength++] = (input[inputBytePos] & (1 << (7 - inputBitPos))) ? '1' : '0';
 
-        for (int i = 0; i < MAX_SYMBOLS; i++)
+      for (int i = 0; i < MAX_SYMBOLS; i++)
         {
 
             CodeNode *node = code_table_get_node(table, i);
