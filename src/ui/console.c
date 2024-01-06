@@ -48,6 +48,8 @@ int start_console(_Bool server, _Bool client) {
                 if (strncmp(input, ":connect ", 9) == 0) {
                     printf("Connecting to '%s'\n", input + 9);
                     last_fd = client_connect(&cl, input + 9);
+                } else if (strcmp(input, "") == 0) {
+                    ;
                 } else {
                     client_send_file_to_all(&cl, trim(input));
                 }

@@ -109,7 +109,6 @@ void client_send_file_to_all(Client *self, const char *path) {
         client_send_file(*(int *)tmp, path);
     }
     array_list_iterator_destroy(&it);
-    
 }
 
 int client_send_file(int client_fd, const char *path) {
@@ -118,11 +117,12 @@ int client_send_file(int client_fd, const char *path) {
     // SENDING THE DATA
     FILE *fp = fopen(path, "rb");
 
-    printf("\nFile Name Received: %s\n", file_name);
-    if (fp == NULL)
-        printf("\nFile open failed!\n");
-    else
-        printf("\nFile Successfully opened!\n");
+    if (fp == NULL) {
+        printf("\n'%s' - Open failed! Skipping!\n", file_name);
+        return -1;
+    } else {
+        printf("\n'%s' - Successfully opened!\n", file_name);
+    }
 
 #define BUF_SIZE (4 * 1024 * 1024)
 
