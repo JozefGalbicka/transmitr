@@ -23,12 +23,11 @@ void frequency_table_destroy(FrTable* this)
 }
 
 
-bool frequency_table_create(FrTable* this, unsigned char* input)
+bool frequency_table_create(FrTable* this, unsigned char* input, size_t inputSize)
 {
 
-    size_t inputLen = strlen(input);
 
-    for(int i = 0; i < inputLen; i++)
+    for(size_t i = 0; i < inputSize; i++)
         this->array[input[i]]++;
     return true;
 }

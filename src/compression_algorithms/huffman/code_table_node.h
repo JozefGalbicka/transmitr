@@ -10,12 +10,15 @@
 typedef struct CodeNode
 {
     unsigned char data;
+    short code_size;
     char* code;
+
 }CodeNode;
 
 void code_node_init(CodeNode* this, unsigned char data);
-void code_node_set_code(CodeNode* this, const char* code);
+void code_node_set_code(CodeNode* this, const char* code, short code_size);
 void code_node_destroy(CodeNode* this);
 char* code_node_get_code(CodeNode* this);
+short code_node_get_code_size(CodeNode* this);
 
 #endif // TRANSMITR_CODE_TABLE_NODE_H

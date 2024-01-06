@@ -13,7 +13,7 @@ typedef struct CodeTable
 }CodeTable;
 
 void code_table_init(CodeTable* this);
-void code_table_set_code(CodeTable* this, unsigned char data, const char* code);
+void code_table_set_code(CodeTable* this, unsigned char data, const char* code, short code_size);
 CodeNode* code_table_get_node(CodeTable* this, unsigned char data);
 void code_table_destroy(CodeTable* this);
 int code_table_get_size(CodeTable* this);
