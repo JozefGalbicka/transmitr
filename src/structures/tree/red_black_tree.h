@@ -23,6 +23,7 @@ RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* 
 
 RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node);
 RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code);
-
+size_t red_black_tree_get_size(RBTree* this);
+void red_black_tree_postorder_get_nodes(RBTreeNode* node,RBTreeNode** nodeArray, size_t* size);
 
 #endif // TRANSMITR_RED_BLACK_TREE_H
