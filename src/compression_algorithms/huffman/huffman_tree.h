@@ -20,7 +20,7 @@ void huffman_tree_destroy(HuffmanTree* this);
 void huffman_tree_create(HuffmanTree* this);
 size_t huffman_tree_size(HuffmanTree* this);
 MinHeapNode* huffman_tree_get_root(HuffmanTree* this);
-void huffman_tree_generate_code_for_node(MinHeapNode * node, char* code, int length, CodeTable* table);
+void huffman_tree_generate_code_for_node(MinHeapNode * node, char* code, short length, CodeTable* table);
 void huffman_tree_generate_codes(HuffmanTree* tree, CodeTable* table);
 
 

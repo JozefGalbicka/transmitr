@@ -17,7 +17,7 @@ typedef struct FrequencyTable
 
 void frequency_table_init(FrTable* this);
 void frequency_table_destroy(FrTable* this);
-bool frequency_table_create(FrTable* this, unsigned char* input);
+bool frequency_table_create(FrTable* this, unsigned char* input,size_t inputSize);
 long long frequency_table_get_frequency(FrTable* this, size_t index);
 
 

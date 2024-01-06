@@ -3,7 +3,7 @@
 //
 
 #include "huffman_core.h"
-#include <string.h>
+
 
 #define MAX_SYMBOLS 256
 #define EMPTY 0
@@ -23,19 +23,22 @@ void wrapper_min_heap_node_destroy(void* node)
     return min_heap_node_destroy((MinHeapNode*) node);
 }
 
-static void encodeToBitstream(CodeTable* table, unsigned char* input, unsigned char* output, int *outputSize, int *validBitsInLastByte)
+static void encodeToBitstream(CodeTable* table, unsigned char* input, size_t inputSize, unsigned char* output, int *outputSize, int *validBitsInLastByte)
 {
     int outputBitPos = EMPTY;
     int outputBytePos = EMPTY;
     output[0] = EMPTY;
 
     unsigned char c;
-    while ((c = *input++) != '\0')
+    for (size_t z = 0; z < inputSize; z++)
     {
+        c = *input++;
         char* code = code_node_get_code(code_table_get_node(table, c));
         if (code)
         {
-            for (int i = 0; code[i] != '\0'; i++)
+            short codeSize = code_node_get_code_size(code_table_get_node(table, c));
+
+            for (int i = 0; i < codeSize; i++)
             {
                 if (code[i] == '1')
                     output[outputBytePos] |= (1 << (7 - outputBitPos));
@@ -65,26 +68,39 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
     int outputIndex = EMPTY;
     int inputBitPos = EMPTY;
     int inputBytePos = EMPTY;
-    char currentCode[MAX_SYMBOLS + 1] = {0};
-    int currentCodeLength = EMPTY;
+    char currentCode[MAX_SYMBOLS ] = {0};
+    short currentCodeLength = EMPTY;
 
-    while (inputBytePos < inputSize) {
+    while (inputBytePos < inputSize)
+    {
         if (inputBytePos == inputSize - 1 && inputBitPos >= validBitsInLastByte)
             break;
 
         currentCode[currentCodeLength++] = (input[inputBytePos] & (1 << (7 - inputBitPos))) ? '1' : '0';
-        currentCode[currentCodeLength] = '\0';
 
-        for (int i = 0; i < MAX_SYMBOLS; i++) {
+        for (int i = 0; i < MAX_SYMBOLS; i++)
+        {
 
             CodeNode *node = code_table_get_node(table, i);
             const char *code = code_node_get_code(node);
+            short codeSize = code_node_get_code_size(node);
 
-            if (strcmp(code, currentCode) == 0)
+            if(currentCodeLength == codeSize)
             {
-                output[outputIndex++] = i;
-                currentCodeLength = EMPTY;
-                break;
+                short u;
+                for(u = 0; u < codeSize;u++)
+                {
+                    if(currentCode[u] != code[u])
+                        break;
+                }
+
+                if (u == codeSize)
+                {
+                    output[outputIndex++] = i;
+                    currentCodeLength = EMPTY;
+                    break;
+                }
+
             }
         }
 
@@ -96,17 +112,16 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
         }
     }
 
-    output[outputIndex] = '\0';
 }
 
 
-void huffman_encode_from_file( unsigned char* input, unsigned char* output,int* outputSize,int* validBitsInLastByte, CodeTable *codeTable)
+void huffman_encode_from_file( unsigned char* input, size_t inputSize,unsigned char* output,int* outputSize,int* validBitsInLastByte, CodeTable *codeTable)
 {
 
 
     FrTable frTable;
     frequency_table_init(&frTable);
-    frequency_table_create(&frTable, input);
+    frequency_table_create(&frTable, input, inputSize);
 
     MinHeap minHeap;
     min_heap_init(&minHeap, sizeof(MinHeapNode));
@@ -131,7 +146,7 @@ void huffman_encode_from_file( unsigned char* input, unsigned char* output,int* 
 
     min_heap_destroy(&minHeap, wrapper_min_heap_node_destroy);
 
-    encodeToBitstream(codeTable, input, output, outputSize, validBitsInLastByte);
+    encodeToBitstream(codeTable, input, inputSize, output, outputSize, validBitsInLastByte);
 
     huffman_tree_destroy(&huftree);
 

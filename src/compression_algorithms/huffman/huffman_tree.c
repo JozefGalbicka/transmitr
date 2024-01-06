@@ -34,7 +34,8 @@ void huffman_tree_destroy(HuffmanTree* this)
 }
 
 
-void huffman_tree_create(HuffmanTree* this) {
+void huffman_tree_create(HuffmanTree* this)
+{
 
     if (min_heap_size(this->minHeap) == 1)
     {
@@ -90,22 +91,21 @@ void huffman_tree_free(MinHeapNode* node) {
 }
 
 
-void huffman_tree_generate_code_for_node(MinHeapNode* node, char* code, int length, CodeTable* table)
+void huffman_tree_generate_code_for_node(MinHeapNode* node, char* code, short length, CodeTable* table)
 {
     if (node == NULL)
         return;
 
     if (!min_heap_node_get_left(node) && !min_heap_node_get_right(node))
     {
-        code[length] = '\0';
-        code_table_set_code(table, min_heap_node_get_data(node), code);
+        code_table_set_code(table, min_heap_node_get_data(node), code, length);
         return;
     }
 
     if (min_heap_node_get_left(node))
     {
         code[length] = '0';
-        huffman_tree_generate_code_for_node(min_heap_node_get_left(node), code, length + 1, table);
+        huffman_tree_generate_code_for_node(min_heap_node_get_left(node), code, length + 1 , table);
     }
     if (min_heap_node_get_right(node))
     {
