@@ -186,6 +186,7 @@ void red_black_tree_insert(RBTree* this,int code,const unsigned char* value,size
         red_black_tree_node_set_right_son(potFather, newNode);
 
     red_black_tree_rules_repair(this, newNode);
+    this->size++;
 }
 
 
@@ -257,6 +258,7 @@ RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node) {
     if (originalColor == black)
         red_black_tree_rules_repair(this, x);
 
+    this->size--;
     return node;
 }
 
@@ -303,4 +305,20 @@ RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code) {
     }
 
     return NULL;
+}
+
+size_t red_black_tree_get_size(RBTree* this)
+{
+    return this->size;
+}
+
+
+void red_black_tree_postorder_get_nodes(RBTreeNode* node,RBTreeNode** nodeArray, size_t* size)
+{
+    if (node != NULL)
+    {
+        red_black_tree_postorder_get_nodes(red_black_tree_node_get_left_son(node), nodeArray, size);
+        red_black_tree_postorder_get_nodes(red_black_tree_node_get_right_son(node), nodeArray, size);
+        nodeArray[*size] = node;
+    }
 }
