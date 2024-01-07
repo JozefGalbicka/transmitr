@@ -1,18 +1,21 @@
 
 #include "client.h"
+#include "../utils//macros.h"
+#include "../utils/strings.h"
+#include "compression_algorithms/huffman/code_table.h"
+#include "compression_algorithms/huffman/huffman_core.h"
+#include "header.h"
+
 #include <arpa/inet.h>
+#include <linux/tcp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#define PORT 8080
-#define nofile "File Not Found!"
-#include "../utils//macros.h"
-#include "../utils/strings.h"
-#include "header.h"
 
-#include <linux/tcp.h>
+#define nofile "File Not Found!"
+#define PORT 8080
 
 void client_init(Client *self) {
     self->servers = malloc(sizeof(ArrayList));
@@ -143,8 +146,7 @@ int client_send_file(int client_fd, const char *path, const char mode) {
     sent_len = send(client_fd, file_name, strlen(file_name) + 1, 0);
     DEBUG_MESSAGE("%zdu (Filename)\n", sent_len);
 
-
-    strcpy(header.flags, &mode);
+    memcpy(header.flags, &mode, 1);
     int read_size = 0;
     while (read_chunk(fp, buf, BUF_SIZE, &read_size) == 0 || read_size != 0) {
         if (mode == 'r') {
@@ -160,6 +162,52 @@ int client_send_file(int client_fd, const char *path, const char mode) {
             }
             byte_counter += sent_len;
             DEBUG_MESSAGE("%zdu (Data)\n", sent_len);
+        } else if (mode == 'h') {
+            CodeTable code_table;
+            code_table_init(&code_table);
+
+            unsigned char *compressed = malloc(read_size);
+            int compressed_size = 0;
+            int compressed_last_bits_valid = 0;
+
+            huffman_encode_from_file(buf, read_size, compressed, &compressed_size, &compressed_last_bits_valid,
+                                     &code_table);
+
+            size_t table_buf_size = 0;
+            unsigned char *table_buf = code_table_serialize(&code_table, &table_buf_size, compressed_last_bits_valid);
+
+            //// SENDING TABLE
+            // Sending header
+            strcpy(header.flags, "hc");
+            header.data_length = table_buf_size;
+            sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+            DEBUG_MESSAGE("%zdu (Header)\n", sent_len);
+
+            // Sending data
+            sent_len = send(client_fd, table_buf, table_buf_size, 0);
+            if (sent_len != table_buf_size) {
+                printf("Sent/Buffer: %zd / %zu\n", sent_len, table_buf_size);
+            }
+            byte_counter += sent_len;
+            DEBUG_MESSAGE("%zdu (Data (CodeTable))\n", sent_len);
+            code_table_destroy(&code_table);
+            free(table_buf);
+
+            //// SENDING COMPRESSED DATA
+            // Sending header
+            strcpy(header.flags, "hd");
+            header.data_length = compressed_size;
+            sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+            DEBUG_MESSAGE("%zdu (Header)\n", sent_len);
+
+            // Sending data
+            sent_len = send(client_fd, compressed, compressed_size, 0);
+            if (sent_len != compressed_size) {
+                printf("Sent/Buffer: %zd / %d\n", sent_len, compressed_size);
+            }
+            free(compressed);
+            byte_counter += sent_len;
+            DEBUG_MESSAGE("%zdu (Data (Compressed))\n", sent_len);
         }
     }
 

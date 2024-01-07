@@ -51,7 +51,7 @@ int start_console(_Bool server, _Bool client) {
                 } else if (strcmp(input, "") == 0) {
                     ;
                 } else {
-                    client_send_file_to_all(&cl, trim(input), 'r');
+                    client_send_file_to_all(&cl, trim(input), 'h');
                 }
             }
         }

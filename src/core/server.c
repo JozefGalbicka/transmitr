@@ -4,6 +4,8 @@
 #include "server.h"
 #include "../structures/list/array_list.h"
 #include "../utils/macros.h"
+#include "compression_algorithms/huffman/code_table.h"
+#include "compression_algorithms/huffman/huffman_core.h"
 #include "header.h"
 
 #include <arpa/inet.h>
@@ -39,6 +41,19 @@ static void *serve_client(void *cti_v) {
 
     char file_name[100];
     FILE *f;
+
+    // Huffman CodeTable
+    CodeTable huff_code_table;
+    unsigned char *huff_code_table_buf = NULL;
+    size_t huff_code_table_buf_size = 0;
+    int huff_compressed_last_bits_valid = -1;
+    // Huffman-compressed data
+    unsigned char *huff_compressed_data = NULL;
+    size_t huff_compressed_data_size = 0;
+
+    int byte_counter = 0;
+    int byte_counter_from_read = 0;
+    int byte_counter_from_header = 0;
 
     while ((valread = read(cti->client_fd, buffer, BUF_SIZE)) != 0) {
         // https://stackoverflow.com/questions/3074824/reading-buffer-from-socket
@@ -96,6 +111,7 @@ static void *serve_client(void *cti_v) {
                     first = 0;
                 }
 
+                byte_counter_from_header += h.data_length;
                 chunk_remaining_bytes = h.data_length;
             }
 
@@ -140,15 +156,101 @@ static void *serve_client(void *cti_v) {
                     fprintf(stderr, "Error occurred with opening file '%s' for write", file_name);
                 }
                 setvbuf(f, NULL, _IONBF, 0);
+                byte_counter_from_header = 0;
+                byte_counter_from_read = 0;
+                byte_counter = 0;
             } else if (*h.flags == 'e') {
                 DEBUG_MESSAGE("--END FILENAME: ");
                 fprintf(stdout, "Successfully received file '%.*s'\n", start_size, start);
                 fclose(f);
                 f = NULL;
+                DEBUG_MESSAGE("bytes from header: %d\n", byte_counter_from_header);
+                DEBUG_MESSAGE("bytes from reads: %d\n", byte_counter_from_read);
+                printf("bytes from processing: %d\n", byte_counter);
             } else {
                 // fprintf(f, "%.*s", (int)valread - buffer_index, cur);
-                if (*h.flags == 'r') {
+                if (*h.flags == 'r') { // RAW
                     fwrite(start, 1, start_size, f);
+                } else if (*h.flags == 'h') { // HUFFMAN
+                    byte_counter_from_read += start_size;
+
+                    if (*(h.flags + 1) == 'c') { // CODETABLE
+                        // printf("Received Huffman CodeTable\n");
+
+                        if (chunk_remaining_bytes == 0) {
+
+                            if (!huff_code_table_buf) {
+                                code_table_deserialize(&huff_code_table, start, 0, &huff_compressed_last_bits_valid);
+                                byte_counter += start_size;
+                            } else {
+                                memcpy(huff_code_table_buf + huff_code_table_buf_size, start, start_size);
+                                huff_code_table_buf_size += start_size;
+                                byte_counter += start_size;
+
+                                code_table_deserialize(&huff_code_table, huff_code_table_buf, 0,
+                                                       &huff_compressed_last_bits_valid);
+                                free(huff_code_table_buf);
+                                huff_code_table_buf = NULL;
+                                huff_code_table_buf_size = 0;
+                            }
+                        } else { // CodeTable received in two separate reads
+                            if (!huff_code_table_buf) {
+                                huff_code_table_buf = malloc(h.data_length);
+                            }
+                            memcpy(huff_code_table_buf + huff_code_table_buf_size, start, start_size);
+                            huff_code_table_buf_size += start_size;
+                            byte_counter += start_size;
+                        }
+
+                    } else if (*(h.flags + 1) == 'd') { // COMPRESSED DATA
+                        // printf("Received Huffman-compressed data");
+                        if (huff_compressed_last_bits_valid == -1) {
+                            fprintf(stderr, "Reading data, but CodeTable was not initialized");
+                            exit(98);
+                        }
+
+                        if (chunk_remaining_bytes == 0) {
+                            unsigned char *decrypted = malloc(2 * h.data_length);
+                            int decrypted_size = 0;
+
+                            DEBUG_MESSAGE("Decoding..\n");
+                            if (!huff_compressed_data) {
+                                byte_counter += start_size;
+                                huffman_decode(start, start_size, huff_compressed_last_bits_valid, &huff_code_table,
+                                               decrypted, &decrypted_size);
+                            } else {
+                                byte_counter += start_size;
+                                memcpy(huff_compressed_data + huff_compressed_data_size, start, start_size);
+                                huff_compressed_data_size += start_size;
+
+                                huffman_decode(huff_compressed_data, huff_compressed_data_size,
+                                               huff_compressed_last_bits_valid, &huff_code_table, decrypted,
+                                               &decrypted_size);
+                                free(huff_compressed_data);
+                                huff_compressed_data = NULL;
+                                huff_compressed_data_size = 0;
+                            }
+                            DEBUG_MESSAGE("Finished decoding\n");
+
+                            fwrite(decrypted, 1, decrypted_size, f);
+                            code_table_destroy(&huff_code_table);
+                            free(decrypted);
+
+                        } else { // Huffman-compressed data received in two separate reads
+                            if (!huff_compressed_data) {
+                                huff_compressed_data = malloc(h.data_length);
+                            }
+                            byte_counter += start_size;
+                            memcpy(huff_compressed_data + huff_compressed_data_size, start, start_size);
+                            huff_compressed_data_size += start_size;
+                        }
+                    } else {
+                        fprintf(stderr, "Missing second flag in Huffman header\n");
+                        exit(97);
+                    }
+                } else {
+                    fprintf(stderr, "Missing flag in FILE transfer\n");
+                    exit(96);
                 }
             }
 
