@@ -145,8 +145,7 @@ int client_send_file(int client_fd, const char *path) {
     strcpy(header.flags, "f");
 
     int read_size = 0;
-    read_chunk(fp, buf, BUF_SIZE, &read_size);
-    do {
+    while (read_chunk(fp, buf, BUF_SIZE, &read_size) == 0 || read_size != 0) {
         // Sending header
         header.data_length = read_size;
         sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
@@ -155,22 +154,14 @@ int client_send_file(int client_fd, const char *path) {
         // Sending data
         sent_len = send(client_fd, buf, read_size, 0);
         if (sent_len != read_size) {
-            printf("Sent/Buffer: %d / %d\n", sent_len, read_size);
+            printf("Sent/Buffer: %zd / %d\n", sent_len, read_size);
         }
         byte_counter += sent_len;
         printf("%zdu (Data)\n", sent_len);
 
         // printf("%s", buf);
         // printf("%lu\n", strlen(buf));
-    } while (read_chunk(fp, buf, BUF_SIZE, &read_size) == 0);
-
-    header.data_length = read_size;
-    sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
-    printf("%zdu (Header)\n", sent_len);
-
-    sent_len = send(client_fd, buf, read_size, 0);
-    printf("%zdu (Data)\n", sent_len);
-    byte_counter += sent_len;
+    } 
 
     int flag = 1;
     setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
