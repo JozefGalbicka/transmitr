@@ -11,6 +11,6 @@
 #include "structures/tree/min_heap.h"
 
 void huffman_encode_from_file(unsigned char* input, size_t inputSize, unsigned char* output,int* outputSize,int* validBitsInLastByte, CodeTable *codeTable);
-void huffman_decode(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* codeTable, unsigned char* output);
+void huffman_decode(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* codeTable, unsigned char* output, int* outputSize);
 
 #endif // TRANSMITR_HUFFMAN_CORE_H

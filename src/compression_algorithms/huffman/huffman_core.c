@@ -60,7 +60,7 @@ static void encodeToBitstream(CodeTable* table, unsigned char* input, size_t inp
     *validBitsInLastByte = (outputBitPos == 0) ? 8 : outputBitPos;
 }
 
-static void decodeFromBitstream(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* table, unsigned char* output)
+static void decodeFromBitstream(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* table, unsigned char* output, int* outputSize)
 {
     if (!input || !table || !output)
         return;
@@ -112,6 +112,7 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
             inputBytePos++;
         }
     }
+    *outputSize = outputIndex;
 
 }
 
@@ -153,9 +154,9 @@ void huffman_encode_from_file( unsigned char* input, size_t inputSize,unsigned c
 
 }
 
-void huffman_decode(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* codeTable, unsigned char* output)
+void huffman_decode(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* codeTable, unsigned char* output, int* outputSize)
 {
-    decodeFromBitstream(input, inputSize, validBitsInLastByte, codeTable, output);
+    decodeFromBitstream(input, inputSize, validBitsInLastByte, codeTable, output, outputSize);
 }
 
 
