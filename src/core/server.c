@@ -147,7 +147,9 @@ static void *serve_client(void *cti_v) {
                 f = NULL;
             } else {
                 // fprintf(f, "%.*s", (int)valread - buffer_index, cur);
-                fwrite(start, 1, start_size, f);
+                if (*h.flags == 'r') {
+                    fwrite(start, 1, start_size, f);
+                }
             }
 
             if (chunk_remaining_bytes == 0) {
