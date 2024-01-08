@@ -170,7 +170,7 @@ int client_send_file(int client_fd, const char *path, const char mode) {
             int compressed_size = 0;
             int compressed_last_bits_valid = 0;
 
-            huffman_encode_from_file(buf, read_size, compressed, &compressed_size, &compressed_last_bits_valid,
+            huffman_encode(buf, read_size, compressed, &compressed_size, &compressed_last_bits_valid,
                                      &code_table);
 
             size_t table_buf_size = 0;
