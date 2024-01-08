@@ -7,9 +7,14 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
-#include <arpa/inet.h>
+
 #define MAX_SYMBOLS 256
 
+/**
+ * Konštruktor pre tabuľku kódov.
+ *
+ * @param this Ukazovateľ na inštanciu CodeTable, ktorá má byť inicializovaná.
+ */
 void code_table_init(CodeTable* this)
 {
     this->array = calloc(MAX_SYMBOLS, sizeof(CodeNode));
@@ -19,16 +24,36 @@ void code_table_init(CodeTable* this)
     }
 }
 
+/**
+ * Nastaví kód pre daný prvok v tabuľke.
+ *
+ * @param this Ukazovateľ na inštanciu CodeTable.
+ * @param data Prvok, pre ktorý sa má nastaviť kód.
+ * @param code Kód, ktorý sa má priradiť.
+ * @param code_size Dĺžka kódu.
+ */
 void code_table_set_code(CodeTable* this, unsigned char data, const char* code, short code_size)
 {
     code_node_set_code((CodeNode*)((unsigned char*)this->array + data*sizeof(CodeNode)), code, code_size);
 }
 
+/**
+ * Vráti uzol kódovej tabuľky pre daný prvok.
+ *
+ * @param this Ukazovateľ na inštanciu CodeTable.
+ * @param data Prvok, pre ktorý sa má vrátiť uzol.
+ * @return Ukazovateľ na CodeNode prislúchajúci danému prvku.
+ */
 CodeNode* code_table_get_node(CodeTable* this, unsigned char data)
 {
     return (CodeNode*)((unsigned char*)this->array+ data*sizeof(CodeNode));
 }
 
+/**
+ * Deštruktor pre tabuľku kódov.
+ *
+ * @param this Ukazovateľ na inštanciu CodeTable.
+ */
 void code_table_destroy(CodeTable* this)
 {
     for (int i = 0; i < MAX_SYMBOLS; i++)
@@ -38,21 +63,25 @@ void code_table_destroy(CodeTable* this)
     free(this->array);
 }
 
+/**
+ * Vráti veľkosť kódovej tabuľky.
+ *
+ * @param this Ukazovateľ na inštanciu CodeTable.
+ * @return Veľkosť tabuľky.
+ */
 int code_table_get_size(CodeTable* this)
 {
     return MAX_SYMBOLS;
 }
 
-void code_table_print(CodeTable* this) 
-{
-    CodeNode *node;
-    for (int i = 0; i < MAX_SYMBOLS; i++)
-    {
-        node = (CodeNode*)((unsigned char*)this->array + i*sizeof(CodeNode));
-        code_node_print(node);
-    }
-}
-
+/**
+ * Serializuje kódovú tabuľku do poľa bajtov.
+ *
+ * @param this Ukazovateľ na inštanciu CodeTable.
+ * @param size Ukazovateľ na premennú, kde sa uloží veľkosť výsledku.
+ * @param valid_bits_in_last_byte Počet platných bitov v poslednom bajte.
+ * @return Ukazovateľ na serializované dáta.
+ */
 unsigned char *code_table_serialize(CodeTable *this, size_t *size, int valid_bits_in_last_byte)
 {
     // Resulting serialized table
@@ -96,6 +125,14 @@ unsigned char *code_table_serialize(CodeTable *this, size_t *size, int valid_bit
 
 }
 
+/**
+ * Deserializuje tabuľku kódov zo zadaného bufferu.
+ *
+ * @param this Ukazovateľ na inštanciu CodeTable, ktorá má byť deserializovaná.
+ * @param buffer Ukazovateľ na buffer obsahujúci serializované dáta.
+ * @param size Veľkosť bufferu v bajtoch.
+ * @param valid_bits_in_last_byte Ukazovateľ na premennú, do ktorej sa uloží počet platných bitov v poslednom bajte deserializovaných dát.
+ */
 void code_table_deserialize(CodeTable *this, unsigned char *buffer, size_t size, int *valid_bits_in_last_byte)
 {
     this->array = calloc(MAX_SYMBOLS, sizeof(CodeNode));
