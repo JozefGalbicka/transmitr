@@ -6,9 +6,14 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <stdio.h>
 #define EMPTY 0
 
+/**
+ * Konštruktor pre prvok, node tabuky kódov.
+ *
+ * @param this Ukazovateľ na CodeNode, ktorý sa má inicializovať.
+ * @param data Dáta, ktoré sa majú uložiť do uzla.
+ */
 void code_node_init(CodeNode* this, unsigned char data)
 {
     this->code_size = EMPTY;
@@ -17,6 +22,13 @@ void code_node_init(CodeNode* this, unsigned char data)
     code_node_set_code(this, "", EMPTY);
 }
 
+/**
+ * Nastaví kód a jeho veľkosť pre prvok, node tabuky kódov.
+ *
+ * @param this Ukazovateľ na CodeNode.
+ * @param code Ukazovateľ na reťazec, ktorý predstavuje kód.
+ * @param code_size Veľkosť kódu.
+ */
 void code_node_set_code(CodeNode* this, const char* code, short code_size) {
     if (code_size != 0)
     {
@@ -30,6 +42,11 @@ void code_node_set_code(CodeNode* this, const char* code, short code_size) {
     this->code_size = code_size;
 }
 
+/**
+ * Deštruktor pre prvok, node tabuky kódov.
+ *
+ * @param this Ukazovateľ na CodeNode, ktorý sa má zničiť.
+ */
 void code_node_destroy(CodeNode* this)
 {
     free(this->code);
@@ -37,23 +54,37 @@ void code_node_destroy(CodeNode* this)
     this->code = NULL;
 }
 
+/**
+ * Vráti kód pre prvok, node tabuky kódov.
+ *
+ * @param this Ukazovateľ na CodeNode.
+ * @return Ukazovateľ na reťazec predstavujúci kód prvku.
+ */
 char* code_node_get_code(CodeNode* this)
 {
     return this->code;
 }
 
+/**
+ * Vráti veľkosť kódu pre prvok, node tabuky kódov.
+ *
+ * @param this Ukazovateľ na CodeNode.
+ * @return Veľkosť kódu.
+ */
 short code_node_get_code_size(CodeNode* this)
 {
     return this->code_size;
 }
 
-void code_node_print(CodeNode* this) 
-{
-    printf("'%c'\t", this->data);
-    printf("'%d'\t", this->code_size);
-    printf("'%.*s'\n", this->code_size, this->code);
-}
-
+/**
+ * Serializuje prvok CodeNode do bajtovej postupnosti.
+ *
+ * Táto funkcia konvertuje dáta a kódovanú reprezentáciu uzla CodeNode do serializovanej formy.
+ *
+ * @param this Ukazovateľ na inštanciu CodeNode, ktorá má byť serializovaná.
+ * @param size Ukazovateľ na premennú, do ktorej sa uloží veľkosť výsledného bufferu.
+ * @return Ukazovateľ na dynamicky alokovaný buffer obsahujúci serializované dáta.
+ */
 unsigned char *code_node_serialize(CodeNode *this, size_t *size) 
 {
     uint16_t len = htons(this->code_size);
@@ -69,6 +100,15 @@ unsigned char *code_node_serialize(CodeNode *this, size_t *size)
     return buffer;
 }
 
+/**
+ * Deserializuje prvok CodeNode z bajtovej postupnosti.
+ * Táto funkcia rekonštruuje inštanciu CodeNode z jej serializovanej formy.
+ *
+ * @param this Ukazovateľ na inštanciu CodeNode, ktorá má byť deserializovaná.
+ * @param buffer Ukazovateľ na buffer obsahujúci serializované dáta.
+ * @param size Veľkosť bufferu v bajtoch.
+ * @return Ukazovateľ na miesto v bufferi nasledujúce po spracovaných dátach.
+ */
 unsigned char *code_node_deserialize(CodeNode *this, unsigned char *buffer, size_t size)
 {
     uint16_t len;

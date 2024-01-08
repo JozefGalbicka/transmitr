@@ -18,11 +18,11 @@ static void wrapper_min_heap_node_destroy(void* node)
 void huffman_tree_init(HuffmanTree* this, MinHeap* minHeap )
 {
     this->minHeap = malloc(sizeof(MinHeap));
-    this->minHeap->array = malloc(minHeap->node_size * minHeap->capacity);
-    memcpy(this->minHeap->array, minHeap->array, minHeap->node_size * minHeap->size);
-    this->minHeap->node_size = minHeap->node_size;
-    this->minHeap->capacity = minHeap->capacity;
-    this->minHeap->size = minHeap->size;
+    min_heap_set_array(this->minHeap, malloc(minHeap->node_size * minHeap->capacity));
+    memcpy(min_heap_get_array(this->minHeap), min_heap_get_array(minHeap), min_heap_get_node_size(minHeap) * min_heap_get_size(minHeap));
+    min_heap_set_node_size(this->minHeap,min_heap_get_node_size(minHeap));
+    min_heap_set_capacity(this->minHeap,min_heap_get_capacity(minHeap));
+    min_heap_set_size(this->minHeap,min_heap_get_size(minHeap));
 }
 
 void huffman_tree_destroy(HuffmanTree* this)
@@ -30,14 +30,13 @@ void huffman_tree_destroy(HuffmanTree* this)
     huffman_tree_free(min_heap_get_root(this->minHeap));
     free(this->minHeap);
     this->minHeap = NULL;
-    this->frTable = NULL;
 }
 
 
 void huffman_tree_create(HuffmanTree* this)
 {
 
-    if (min_heap_size(this->minHeap) == 1)
+    if (min_heap_get_size(this->minHeap) == 1)
     {
         MinHeapNode* onlyNode = malloc(sizeof(MinHeapNode));
         min_heap_remove_min(this->minHeap,wrapper_min_heap_node_get_freq,onlyNode);
@@ -51,7 +50,7 @@ void huffman_tree_create(HuffmanTree* this)
         free(root);
     }
 
-    while (min_heap_size(this->minHeap) > 1) {
+    while (min_heap_get_size(this->minHeap) > 1) {
         MinHeapNode *left = malloc(sizeof(MinHeapNode));
         MinHeapNode *right = malloc(sizeof(MinHeapNode));
 
@@ -78,10 +77,11 @@ MinHeapNode* huffman_tree_get_root(HuffmanTree* this)
 
 size_t huffman_tree_size(HuffmanTree* this)
 {
-    return min_heap_size(this->minHeap);
+    return min_heap_get_size(this->minHeap);
 }
 
-void huffman_tree_free(MinHeapNode* node) {
+void huffman_tree_free(MinHeapNode* node)
+{
     if (node == NULL)
         return;
 

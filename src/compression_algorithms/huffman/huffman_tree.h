@@ -12,7 +12,6 @@
 typedef struct HuffmanTree
 {
     MinHeap* minHeap;
-    FrTable* frTable;
 }HuffmanTree;
 
 void huffman_tree_init(HuffmanTree* this, MinHeap* minHeap);

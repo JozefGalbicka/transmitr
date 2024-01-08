@@ -18,8 +18,6 @@ CodeNode* code_table_get_node(CodeTable* this, unsigned char data);
 void code_table_destroy(CodeTable* this);
 int code_table_get_size(CodeTable* this);
 
-void code_table_print(CodeTable* this);
-
 unsigned char *code_table_serialize(CodeTable *this, size_t *size, int valid_bits_in_last_byte);
 void code_table_deserialize(CodeTable *this, unsigned char *buffer, size_t size, int *valid_bits_in_last_byte);
 

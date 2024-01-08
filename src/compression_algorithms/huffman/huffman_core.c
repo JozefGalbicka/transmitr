@@ -8,21 +8,51 @@
 #define MAX_SYMBOLS 256
 #define EMPTY 0
 
+/**
+ * Obaľovacia fukncia pre fukciu ktorá získava frekvenciu pre uzol, node min-heapu.
+ *
+ * @param node Ukazovateľ na uzol, z ktorého sa má získať frekvencia.
+ * @return Frekvencia daného uzla.
+ */
 long long wrapper_min_heap_node_get_freq(void* node)
 {
     return min_heap_node_get_freq((MinHeapNode*) node);
 }
 
+/**
+ * Obaľovacia fukncia pre fukciu konštruktora uzla, node min-heap.
+ *
+ * @param node Ukazovateľ na uzol, ktorý sa má inicializovať.
+ * @param data Dáta, ktoré sa majú uložiť do uzla.
+ * @param freq Frekvencia, ktorá sa má priradiť uzlu.
+ */
 void wrapper_min_heap_node_init(void* node, unsigned char data, long long freq)
 {
     return min_heap_node_init((MinHeapNode*) node, data, freq );
 }
 
+/**
+ * Obaľovacia fukncia pre fukciu deštruktora uzla, node min-heap.
+ *
+ * @param node Ukazovateľ na uzol, ktorý sa má zničiť.
+ */
 void wrapper_min_heap_node_destroy(void* node)
 {
     return min_heap_node_destroy((MinHeapNode*) node);
 }
 
+/**
+ * Statická fukcia ktorá kóduje vstupné dáta do bitového prúdu (bitstream) pomocou tabuľky kódov.
+ * Táto funkcia prechádza vstupné dáta a pre každý bajt vstupu vyhľadá príslušný kódv tabuľke kódov.
+ * Každý takýto kód je potom zapísaný do výstupného bitového prúdu.
+ *
+ * @param table Ukazovateľ na CodeTable, obsahujúcu kódovaciu tabuľku.
+ * @param input Ukazovateľ na vstupné dáta, ktoré majú byť zakódované.
+ * @param inputSize Veľkosť vstupných dát v bajtoch.
+ * @param output Ukazovateľ na pole bajtov, kde budú uložené zakódované dáta.
+ * @param outputSize Ukazovateľ na premennú, kde bude uložená veľkosť výstupných dát.
+ * @param validBitsInLastByte Ukazovateľ na premennú, kde bude uložený počet platných bitov v poslednom bajte výstupného bitového prúdu.
+ */
 static void encodeToBitstream(CodeTable* table, unsigned char* input, size_t inputSize, unsigned char* output, int *outputSize, int *validBitsInLastByte)
 {
     int outputBitPos = EMPTY;
@@ -60,6 +90,18 @@ static void encodeToBitstream(CodeTable* table, unsigned char* input, size_t inp
     *validBitsInLastByte = (outputBitPos == 0) ? 8 : outputBitPos;
 }
 
+/**
+ * Statická funkcia ktorá dekóduje bitový prúd späť do pôvodných dát s použitím tabuľky kódov.
+ * Táto funkcia prechádza bitový prúd vstupných dát, rozkladá ho na individuálne kódya hľadá zodpovedajúce znaky v tabuľke kódov.
+ * Každý nájdený kód sa prevádza späť na pôvodný znak a ukladá do výstupného poľa.
+ *
+ * @param input Ukazovateľ na vstupný bitový prúd na dekódovanie.
+ * @param inputSize Veľkosť vstupného bitového prúdu v bajtoch.
+ * @param validBitsInLastByte Počet platných bitov v poslednom bajte vstupného bitového prúdu.
+ * @param table Ukazovateľ na CodeTable, obsahujúcu kódovaciu tabuľku.
+ * @param output Ukazovateľ na výstupné pole bajtov, kde budú uložené dekódované dáta.
+ * @param outputSize Ukazovateľ na premennú, kde bude uložená veľkosť výstupných dekódovaných dát.
+ */
 static void decodeFromBitstream(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* table, unsigned char* output, int* outputSize)
 {
     if (!input || !table || !output)
@@ -116,8 +158,19 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
 
 }
 
-
-void huffman_encode_from_file( unsigned char* input, size_t inputSize,unsigned char* output,int* outputSize,int* validBitsInLastByte, CodeTable *codeTable)
+/**
+ * Zakóduje vstupné dáta pomocou Huffmanovho kódovania.
+ * Táto funkcia najprv vytvorí frekvenčnú tabuľku na základe vstupných dát, potom vytvorí minimálnu haldu a Huffmanov strom.
+ * Po vytvorení Huffmanovho stromu sa generujú kódy pre každý znak a tieto kódy sa používajú na zakódovanie vstupných dát do bitového prúdu.
+ *
+ * @param input Ukazovateľ na vstupné dáta, ktoré majú byť zakódované.
+ * @param inputSize Veľkosť vstupných dát v bajtoch.
+ * @param output Ukazovateľ na pole bajtov, kde budú uložené zakódované dáta.
+ * @param outputSize Ukazovateľ na premennú, kde bude uložená veľkosť výstupných dát.
+ * @param validBitsInLastByte Ukazovateľ na premennú, kde bude uložený počet platných bitov v poslednom bajte výstupného bitového prúdu.
+ * @param codeTable Ukazovateľ na CodeTable použitú pre zakódovanie znakov.
+ */
+void huffman_encode( unsigned char* input, size_t inputSize,unsigned char* output,int* outputSize,int* validBitsInLastByte, CodeTable *codeTable)
 {
 
 
@@ -154,6 +207,18 @@ void huffman_encode_from_file( unsigned char* input, size_t inputSize,unsigned c
 
 }
 
+/**
+ * Dekóduje vstupné dáta zakódované pomocou Huffmanovho kódovania.
+ * Táto funkcia používa statickú funkciu decodeFromBitstream.
+ * Slúži ako obaľovacia fukcia pre ňu.
+ *
+ * @param input Ukazovateľ na vstupný bitový prúd na dekódovanie.
+ * @param inputSize Veľkosť vstupného bitového prúdu v bajtoch.
+ * @param validBitsInLastByte Počet platných bitov v poslednom bajte vstupného bitového prúdu.
+ * @param codeTable Ukazovateľ na CodeTable, obsahujúcu kódovaciu tabuľku.
+ * @param output Ukazovateľ na výstupné pole bajtov, kde budú uložené dekódované dáta.
+ * @param outputSize Ukazovateľ na premennú, kde bude uložená veľkosť výstupných dekódovaných dát.
+ */
 void huffman_decode(const unsigned char* input, int inputSize, int validBitsInLastByte, CodeTable* codeTable, unsigned char* output, int* outputSize)
 {
     decodeFromBitstream(input, inputSize, validBitsInLastByte, codeTable, output, outputSize);
