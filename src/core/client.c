@@ -123,6 +123,7 @@ int client_send_file(int client_fd, const char *path, const char mode) {
 
     if (fp == NULL) {
         printf("\n'%s' - Open failed! Skipping!\n", file_name);
+        free((void *)file_name);
         return -1;
     } else {
         printf("\n'%s' - Successfully opened!\n", file_name);
