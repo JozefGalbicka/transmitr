@@ -85,7 +85,7 @@ int start_console(_Bool server, _Bool client) {
                     }
 
                 } else {
-                    client_send_file_to_all(&cl, trim(input), 'h');
+                    client_send_file_to_all(&cl, trim(input), mode);
                 }
             }
         }

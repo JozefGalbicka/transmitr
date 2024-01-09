@@ -1,4 +1,4 @@
-#define DEBUG 0
+#define DEBUG 1
 
 #if DEBUG
 #define DEBUG_MESSAGE(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__)

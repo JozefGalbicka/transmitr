@@ -26,4 +26,7 @@ RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code);
 size_t red_black_tree_get_size(RBTree* this);
 void red_black_tree_postorder_get_nodes(RBTreeNode* node,RBTreeNode** nodeArray, size_t* size);
 
+unsigned char *red_black_tree_serialize(RBTree *this, size_t *size); 
+void red_black_tree_deserialize(RBTree *this, unsigned char *buffer, size_t size); 
+
 #endif // TRANSMITR_RED_BLACK_TREE_H

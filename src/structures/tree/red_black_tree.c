@@ -2,7 +2,9 @@
 // Created by dominik on 1/3/24.
 //
 #include "red_black_tree.h"
+#include "structures/tree/red_black_tree_node.h"
 #include <stdio.h>
+#include <string.h>
 
 #define EMPTY 0
 
@@ -320,5 +322,71 @@ void red_black_tree_postorder_get_nodes(RBTreeNode* node,RBTreeNode** nodeArray,
         red_black_tree_postorder_get_nodes(red_black_tree_node_get_left_son(node), nodeArray, size);
         red_black_tree_postorder_get_nodes(red_black_tree_node_get_right_son(node), nodeArray, size);
         nodeArray[*size] = node;
+        *size = (*size) + 1;
     }
+}
+
+unsigned char *red_black_tree_serialize(RBTree *this, size_t *size) {
+    RBTreeNode *node_array[this->size];
+    size_t node_array_size = 0;
+
+    RBTreeNode *node;
+    unsigned char *node_buf = NULL;
+    size_t node_buf_size = 0;
+
+    size_t buf_capacity = 100;
+    size_t buf_size = 0;
+    unsigned char *buf = malloc(buf_capacity);
+
+    red_black_tree_postorder_get_nodes(this->root, node_array, &node_array_size);
+    for (int i = 0; i < node_array_size; i++) {
+        node = node_array[i];
+
+        node_buf = red_black_tree_node_serialize(node, &node_buf_size);
+        printf("Code: '%d'\n", node->code);
+        printf("Value size: %zu\n", node->value_size);
+        printf("Value: %.*s\n", node->value_size, node->value);
+        while (buf_size + node_buf_size > buf_capacity) {
+            buf_capacity *= 2;
+            buf = realloc(buf, buf_capacity);
+        }
+        memcpy(buf + buf_size, node_buf, node_buf_size);
+        buf_size += node_buf_size;
+
+        free(node_buf);
+        node_buf = NULL;
+        node_buf_size = 0;
+    }
+    if (node_array_size != this->size) {
+        fprintf(stderr, "Post order did not include all nodes in serialization\n");
+        exit(101);
+    }
+
+    *size = buf_size;
+    return buf;
+}
+
+void red_black_tree_deserialize(RBTree *this, unsigned char *buffer, size_t size) {
+
+    size_t curr_index = 0;
+    unsigned char *curr_buf = buffer;
+    unsigned char *new_curr_buf = NULL;
+
+    int code = 0;
+    size_t value_size;
+    unsigned char *value = NULL;
+
+    while (curr_index < size) {
+        new_curr_buf = red_black_tree_node_deserialize(curr_buf, &code, &value_size, &value);
+        printf("Code: '%d'\n", code);
+        printf("Value size: %zu\n", value_size);
+        printf("Value: %.*s\n", value_size, value);
+        red_black_tree_insert(this, code, value, value_size);
+
+        new_curr_buf++;
+        curr_index += (new_curr_buf - curr_buf);
+        curr_buf = new_curr_buf;
+        new_curr_buf = NULL;
+    }
+    //printf("%zu/%zu", curr_index, size);
 }
