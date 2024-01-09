@@ -38,5 +38,5 @@ uninstall:
 clean:
 	@echo "Cleaning up..."
 	@rm -f $(PROGRAM_NAME)
-	@echo "Cleaned up..."
+	@echo "Cleaned up"
 
