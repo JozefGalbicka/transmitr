@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -g
 INSTALL_PATH = /usr/local/bin
 PROGRAM_NAME = transmitr
 HUFF = src/compression_algorithms/huffman
