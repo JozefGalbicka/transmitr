@@ -9,16 +9,30 @@
 #define INITIAL_OUTPUT_SIZE 8
 #define OUT_CAPACITY 1024
 #define SINGLE_CHAR 1
+#define EMPTY 0
 
-int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* outputSize, size_t input_size) {
+/**
+ * @brief Kompresia vstupného reťazca pomocou LZW algoritmu.
+ *
+ * Táto funkcia komprimuje vstupný reťazec (input) pomocou LZW algoritmu, používa slovník
+ * (dictionary) na ukladanie a vyhľadávanie sekvencií. Výsledkom je pole kódov predstavujúcich komprimované dáta.
+ *
+ * @param input Ukazovateľ na vstupný reťazec bajtov na kompresiu.
+ * @param dictionary Ukazovateľ na slovník používaný v kompresii.
+ * @param outputSize Ukazovateľ na premennú, kde sa uloží veľkosť výstupného poľa.
+ * @param input_size Veľkosť vstupného reťazca.
+ * @return int* Ukazovateľ na pole komprimovaných kódov.
+ */
+int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* outputSize, size_t input_size)
+{
     unsigned char current_sequence[MAX_SYMBOLS + 1] = {0};
-    size_t sequence_length = 0;
-    int code = 0;
-    size_t i = 0;
-    int oldCode = 0;
+    size_t sequence_length = EMPTY;
+    int code = EMPTY ;
+    size_t i = EMPTY ;
+    int oldCode = EMPTY ;
     int capacity = INITIAL_OUTPUT_SIZE;
     int *output = calloc(capacity, sizeof(int));
-    *outputSize = 0;
+    *outputSize = EMPTY ;
 
     for (size_t u = 0; u < input_size; u++)
     {
@@ -83,14 +97,25 @@ int* lzw_compress_encode(const unsigned char* input,RBTree* dictionary, size_t* 
     return output;
 }
 
-
+/**
+ * @brief Dekompresia LZW komprimovaného reťazca.
+ *
+ * Táto funkcia dekomprimuje pole komprimovaných kódov (compressed) pomocou LZW algoritmu
+ * a slovníka (dictionary), rekonštruuje pôvodný reťazec dát.
+ *
+ * @param compressed Ukazovateľ na pole komprimovaných kódov.
+ * @param compressed_size Veľkosť poľa komprimovaných kódov.
+ * @param decompressed_size Ukazovateľ na premennú, kde sa uloží veľkosť dekomprimovaného reťazca.
+ * @param dictionary Ukazovateľ na slovník používaný v dekompresii.
+ * @return unsigned char* Ukazovateľ na dekomprimovaný reťazec bajtov.
+ */
 unsigned char* lzw_decompress_encode(const int* compressed, size_t compressed_size, size_t* decompressed_size, RBTree* dictionary)
 {
     int capacity = OUT_CAPACITY;
     unsigned char* decompressed = calloc(capacity, sizeof(unsigned char));
 
-    size_t decompressed_size_l = 0;
-    int code = 0;
+    size_t decompressed_size_l = EMPTY ;
+    int code = EMPTY ;
     unsigned char* entry;
 
 

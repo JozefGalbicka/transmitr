@@ -11,7 +11,7 @@
 #define MAX_SYMBOLS 256
 
 /**
- * Konštruktor pre tabuľku kódov.
+ * @brief Konštruktor pre tabuľku kódov.
  *
  * @param this Ukazovateľ na inštanciu CodeTable, ktorá má byť inicializovaná.
  */
@@ -25,7 +25,7 @@ void code_table_init(CodeTable* this)
 }
 
 /**
- * Nastaví kód pre daný prvok v tabuľke.
+ * @brief Nastaví kód pre daný prvok v tabuľke.
  *
  * @param this Ukazovateľ na inštanciu CodeTable.
  * @param data Prvok, pre ktorý sa má nastaviť kód.
@@ -38,7 +38,7 @@ void code_table_set_code(CodeTable* this, unsigned char data, const char* code, 
 }
 
 /**
- * Vráti uzol kódovej tabuľky pre daný prvok.
+ * @brief Vráti uzol kódovej tabuľky pre daný prvok.
  *
  * @param this Ukazovateľ na inštanciu CodeTable.
  * @param data Prvok, pre ktorý sa má vrátiť uzol.
@@ -50,7 +50,7 @@ CodeNode* code_table_get_node(CodeTable* this, unsigned char data)
 }
 
 /**
- * Deštruktor pre tabuľku kódov.
+ * @brief Deštruktor pre tabuľku kódov.
  *
  * @param this Ukazovateľ na inštanciu CodeTable.
  */
@@ -64,7 +64,7 @@ void code_table_destroy(CodeTable* this)
 }
 
 /**
- * Vráti veľkosť kódovej tabuľky.
+ * @brief Vráti veľkosť kódovej tabuľky.
  *
  * @param this Ukazovateľ na inštanciu CodeTable.
  * @return Veľkosť tabuľky.
@@ -75,7 +75,7 @@ int code_table_get_size(CodeTable* this)
 }
 
 /**
- * Serializuje kódovú tabuľku do poľa bajtov.
+ * @brief Serializuje kódovú tabuľku do poľa bajtov.
  *
  * @param this Ukazovateľ na inštanciu CodeTable.
  * @param size Ukazovateľ na premennú, kde sa uloží veľkosť výsledku.
@@ -126,7 +126,7 @@ unsigned char *code_table_serialize(CodeTable *this, size_t *size, int valid_bit
 }
 
 /**
- * Deserializuje tabuľku kódov zo zadaného bufferu.
+ * @brief Deserializuje tabuľku kódov zo zadaného bufferu.
  *
  * @param this Ukazovateľ na inštanciu CodeTable, ktorá má byť deserializovaná.
  * @param buffer Ukazovateľ na buffer obsahujúci serializované dáta.

@@ -10,7 +10,7 @@
 #define EMPTY 0
 
 /**
- * Konštruktor min-heap.
+ * @brief Konštruktor min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap, ktorá má byť inicializovaná.
  * @param node_size Veľkosť každého uzla v heap.
@@ -27,7 +27,7 @@ void min_heap_init(MinHeap* this, size_t node_size)
 }
 
 /**
- * Deštruktor pre min-heap.
+ * @brief Deštruktor pre min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap, ktorá má byť zničená.
  * @param destroy_node Ukazovateľ na funkciu, ktorá zničí jeden uzol haldy.
@@ -50,7 +50,7 @@ void min_heap_destroy(MinHeap* this, void (*destroy_node)(void* node))
 }
 
 /**
- * Kontroluje, či má min-heap dostatočnú kapacitu.
+ * @brief Kontroluje, či má min-heap dostatočnú kapacitu.
  * Je to statická metóda.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
@@ -62,8 +62,8 @@ static bool min_heap_has_capacity(MinHeap* this)
 }
 
 /**
- * Zväčšuje kapacitu min-heap.
- * kapacita sa zväćšuje dvojnásobne oproti predchádzajúcej, nedostatočnej kapacite.
+ * @brief Zväčšuje kapacitu min-heap.
+ * Kapacita sa zväćšuje dvojnásobne oproti predchádzajúcej, nedostatočnej kapacite.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @return true, ak sa kapacita úspešne zväčší, inak false.
@@ -83,7 +83,7 @@ static bool min_heap_increase_capacity(MinHeap* this)
 }
 
 /**
- * Vráti index rodičovského uzla v min-heap.
+ * @brief Vráti index rodičovského uzla v min-heap.
  *
  * @param index Index aktuálneho uzla.
  * @return Index rodičovského uzla.
@@ -97,7 +97,7 @@ int min_heap_get_parent(int index)
 }
 
 /**
- * Pridá nový uzol, node do min-heap.
+ * @brief Pridá nový uzol, node do min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @param data Dáta pre nový uzol.
@@ -149,7 +149,7 @@ bool min_heap_add(MinHeap* this,unsigned char data, long long freq,long long (*g
 }
 
 /**
- * Vráti aktuálnu veľkosť min-heap.
+ * @brief Vráti aktuálnu veľkosť min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @return Veľkosť min-heap.
@@ -160,7 +160,7 @@ size_t min_heap_get_size(MinHeap* this)
 }
 
 /**
- * Vráti koreňový uzol, node min-heap.
+ * @brief Vráti koreňový uzol, node min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @return Ukazovateľ na koreňový uzol, alebo NULL, ak je heap prázdny.
@@ -174,7 +174,7 @@ void* min_heap_get_root(MinHeap* this)
 }
 
 /**
- * Vráti index pravého dieťaťa uzla, node v min-heap.
+ * @brief Vráti index pravého dieťaťa uzla, node v min-heap.
  *
  * @param index Index rodičovského uzla.
  * @return Index pravého dieťaťa.
@@ -185,7 +185,7 @@ int min_heap_get_right_child(int index)
 }
 
 /**
- * Vráti index ľavého dieťaťa uzla, node v min-heap.
+ * @brief Vráti index ľavého dieťaťa uzla, node v min-heap.
  *
  * @param index Index rodičovského uzla.
  * @return Index ľavého dieťaťa.
@@ -196,7 +196,7 @@ int min_heap_get_left_child(int index)
 }
 
 /**
- * Odstráni a vráti minimálny uzol, node z min-heap.
+ * @brief Odstráni a vráti minimálny uzol, node z min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @param get_Value Funkcia na získanie hodnoty uzla.
@@ -250,7 +250,7 @@ void min_heap_remove_min(MinHeap* this,long long (*get_Value)(void*), void* outp
 }
 
 /**
- * Pridá uzol, node do min-heap.
+ * @brief Pridá uzol, node do min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @param node Ukazovateľ na uzol, ktorý sa má pridať.
@@ -283,7 +283,7 @@ bool min_heap_add_node(MinHeap* this, void* node,long long (*get_Value)(void*))
 }
 
 /**
- * Vráti veľkosť uzla, node v min-heap.
+ * @brief Vráti veľkosť uzla, node v min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @return Veľkosť uzla.
@@ -294,7 +294,7 @@ size_t min_heap_get_node_size(MinHeap* this)
 }
 
 /**
- * Vráti kapacitu min-heap.
+ * @brief Vráti kapacitu min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @return Kapacita min-heap.
@@ -305,7 +305,7 @@ size_t min_heap_get_capacity(MinHeap* this)
 }
 
 /**
- * Vráti ukazovateľ na pole uzlov, node v min-heap.
+ * @brief Vráti ukazovateľ na pole uzlov, node v min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @return Ukazovateľ na pole uzlov.
@@ -316,7 +316,7 @@ void* min_heap_get_array(MinHeap* this)
 }
 
 /**
- * Nastaví pole uzlov, node min-heap.
+ * @brief Nastaví pole uzlov, node min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @param array Ukazovateľ na nové pole uzlov.
@@ -327,7 +327,7 @@ void min_heap_set_array(MinHeap* this, void* array)
 }
 
 /**
- * Nastaví veľkosť min-heap.
+ * @brief Nastaví veľkosť min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @param size Nová veľkosť haldy.
@@ -338,7 +338,7 @@ void min_heap_set_size(MinHeap* this, size_t size)
 }
 
 /**
- * Nastaví veľkosť uzla, node v min-heap.
+ * @brief Nastaví veľkosť uzla, node v min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @param node_size Nová veľkosť uzla.
@@ -349,7 +349,7 @@ void min_heap_set_node_size(MinHeap* this, size_t node_size)
 }
 
 /**
- * Nastaví kapacitu min-heap.
+ * @brief Nastaví kapacitu min-heap.
  *
  * @param this Ukazovateľ na inštanciu MinHeap.
  * @param capacity Nová kapacita haldy.

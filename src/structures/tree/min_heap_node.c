@@ -5,7 +5,7 @@
 #include "min_heap_node.h"
 
 /**
- * Konstruktor uzlu,node min-heap..
+ * @brief Konstruktor uzlu,node min-heap..
  *
  * @param this Ukazovateľ na MinHeapNode, ktorý sa má inicializovať.
  * @param data Dáta, ktoré sa majú uložiť do uzla.
@@ -20,7 +20,7 @@ void min_heap_node_init(MinHeapNode* this, unsigned char data, long long freq)
 }
 
 /**
- * Vráti frekvenciu uzla,node min-heap.
+ * @brief Vráti frekvenciu uzla,node min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @return Frekvencia uzla.
@@ -31,7 +31,7 @@ long long min_heap_node_get_freq(MinHeapNode* this)
 }
 
 /**
- * Vráti dáta uzla,nado min-heap.
+ * @brief Vráti dáta uzla,nado min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @return Dáta uzla.
@@ -42,7 +42,7 @@ unsigned char min_heap_node_get_data(MinHeapNode* this)
 }
 
 /**
- * Nastaví frekvenciu uzla, node min-heap.
+ * @brief Nastaví frekvenciu uzla, node min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @param freq Nová frekvencia, ktorá sa má nastaviť.
@@ -53,7 +53,7 @@ void min_heap_node_set_freq(MinHeapNode* this, long long freq)
 }
 
 /**
- * Nastaví dáta uzla, node min-heap.
+ * @brief Nastaví dáta uzla, node min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @param data Nové dáta, ktoré sa majú nastaviť.
@@ -64,7 +64,7 @@ void min_heap_node_set_data(MinHeapNode* this, unsigned char data)
 }
 
 /**
- * Deštruktor uzolu ,node min-heap.
+ * @brief Deštruktor uzolu ,node min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  */
@@ -75,7 +75,7 @@ void min_heap_node_destroy(MinHeapNode* this)
 }
 
 /**
- * Nastaví pravé dieťa pre uzol,node min-heap.
+ * @brief Nastaví pravé dieťa pre uzol,node min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @param right Ukazovateľ na pravé dieťa, ktoré sa má nastaviť.
@@ -86,7 +86,7 @@ void min_heap_node_set_right(MinHeapNode* this, MinHeapNode* right)
 }
 
 /**
- * Nastaví ľavé dieťa pre uzol, node min-heap.
+ * @brief Nastaví ľavé dieťa pre uzol, node min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @param left Ukazovateľ na ľavé dieťa, ktoré sa má nastaviť.
@@ -97,7 +97,7 @@ void min_heap_node_set_left(MinHeapNode* this, MinHeapNode* left)
 }
 
 /**
- * Vráti pravé dieťa uzla, node min-heap.
+ * @brief Vráti pravé dieťa uzla, node min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @return Ukazovateľ na pravé dieťa uzla.
@@ -108,7 +108,7 @@ MinHeapNode* min_heap_node_get_right(MinHeapNode* this)
 }
 
 /**
- * Vráti ľavé dieťa uzla, heap min-heap.
+ * @brief Vráti ľavé dieťa uzla, heap min-heap.
  *
  * @param this Ukazovateľ na MinHeapNode.
  * @return Ukazovateľ na ľavé dieťa uzla.
