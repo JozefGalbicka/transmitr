@@ -320,5 +320,6 @@ void red_black_tree_postorder_get_nodes(RBTreeNode* node,RBTreeNode** nodeArray,
         red_black_tree_postorder_get_nodes(red_black_tree_node_get_left_son(node), nodeArray, size);
         red_black_tree_postorder_get_nodes(red_black_tree_node_get_right_son(node), nodeArray, size);
         nodeArray[*size] = node;
+        *size = (*size) + 1;
     }
 }
