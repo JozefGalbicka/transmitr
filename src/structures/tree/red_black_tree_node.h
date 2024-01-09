@@ -47,5 +47,8 @@ int red_black_tree_node_get_code(RBTreeNode* this);
 unsigned char* red_black_tree_node_get_value(RBTreeNode* this);
 size_t red_black_tree_node_get_value_size(RBTreeNode* this);
 
+unsigned char *red_black_tree_node_serialize(RBTreeNode *this, size_t *size); 
+unsigned char *red_black_tree_node_deserialize(unsigned char *buffer, int *code, size_t *value_size, unsigned char** value); 
+
 
 #endif // TRANSMITR_RED_BLACK_TREE_NODE_H

@@ -5,6 +5,8 @@
 #include "red_black_tree_node.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
 
 
 #define EMPTY 0
@@ -134,4 +136,37 @@ unsigned char* red_black_tree_node_get_value(RBTreeNode* this)
 size_t red_black_tree_node_get_value_size(RBTreeNode* this)
 {
     return this->value_size;
+}
+
+unsigned char *red_black_tree_node_serialize(RBTreeNode *this, size_t *size) {
+    uint32_t code = htonl(this->code);
+    uint32_t value_size = htonl((uint32_t)this->value_size);
+    size_t buffer_size = sizeof(code) + sizeof(value_size) + this->value_size;
+
+    unsigned char *buffer = malloc(buffer_size);
+
+    memcpy(buffer, &code, sizeof(code));
+    memcpy(buffer + sizeof(code), &value_size, sizeof(value_size));
+    memcpy(buffer + sizeof(code) + sizeof(value_size), this->value, this->value_size);
+
+    *size = buffer_size;
+    return buffer;
+}
+
+unsigned char *red_black_tree_node_deserialize(unsigned char *buffer, int *code, size_t *value_size, unsigned char** value) {
+    uint32_t code_l;
+    uint32_t value_size_l;
+
+    memcpy(&code_l, buffer, sizeof(code_l));
+    *code = ntohl(code_l);
+
+    memcpy(&value_size_l, buffer + sizeof(code_l), sizeof(value_size_l));
+    *value_size = ntohl(value_size_l);
+
+    unsigned char *value_l = malloc(*value_size);
+
+    memcpy(value_l, buffer + sizeof(code_l) + sizeof(value_size_l), *value_size);
+    *value = value_l;
+
+    return (buffer + sizeof(code_l) + sizeof(value_size_l) + *value_size - 1);
 }
