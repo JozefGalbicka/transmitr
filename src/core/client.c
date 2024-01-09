@@ -2,9 +2,11 @@
 #include "client.h"
 #include "../utils//macros.h"
 #include "../utils/strings.h"
+#include "compression_algorithms/LZW/LZW_core.h"
 #include "compression_algorithms/huffman/code_table.h"
 #include "compression_algorithms/huffman/huffman_core.h"
 #include "header.h"
+#include "structures/tree/red_black_tree.h"
 
 #include <arpa/inet.h>
 #include <linux/tcp.h>
@@ -171,8 +173,7 @@ int client_send_file(int client_fd, const char *path, const char mode) {
             int compressed_size = 0;
             int compressed_last_bits_valid = 0;
 
-            huffman_encode(buf, read_size, compressed, &compressed_size, &compressed_last_bits_valid,
-                                     &code_table);
+            huffman_encode(buf, read_size, compressed, &compressed_size, &compressed_last_bits_valid, &code_table);
 
             size_t table_buf_size = 0;
             unsigned char *table_buf = code_table_serialize(&code_table, &table_buf_size, compressed_last_bits_valid);
@@ -209,6 +210,63 @@ int client_send_file(int client_fd, const char *path, const char mode) {
             free(compressed);
             byte_counter += sent_len;
             DEBUG_MESSAGE("%zdu (Data (Compressed))\n", sent_len);
+        } else if (mode == 'l') {
+            // Init
+            RBTree tree;
+            red_black_tree_init(&tree);
+
+            // Compressing data
+            size_t compressed_count = 0;
+            int *compressed = lzw_compress_encode(buf, &tree, &compressed_count, read_size);
+
+            // Serializing compressed data
+            unsigned char *compressed_serialized = malloc(compressed_count * sizeof(uint32_t));
+            for (int i = 0; i < compressed_count; i++) {
+                uint32_t data = htonl(compressed[i]);
+                memcpy(compressed_serialized + i * sizeof(data), &data, sizeof(data));
+            }
+            DEBUG_MESSAGE("LZW Compressed/Raw %zu/%d B\n", compressed_count * sizeof(uint32_t), read_size);
+#include "../utils/prints.h"
+            free(compressed);
+
+            // Serializing Tree
+            size_t tree_buf_size = 0;
+            unsigned char *tree_buf = red_black_tree_serialize(&tree, &tree_buf_size);
+            DEBUG_MESSAGE("Tree buf size: %zu B\n", tree_buf_size);
+            red_black_tree_destroy(&tree);
+
+            //// SENDING TREE
+            // Sending header
+            strcpy(header.flags, "lt");
+            header.data_length = tree_buf_size;
+            sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+            DEBUG_MESSAGE("%zdu (Header)\n", sent_len);
+
+            // Sending data
+            sent_len = send(client_fd, tree_buf, tree_buf_size, 0);
+            if (sent_len != tree_buf_size) {
+                printf("Sent/Buffer: %zd / %zu\n", sent_len, tree_buf_size);
+            }
+            byte_counter += sent_len;
+            DEBUG_MESSAGE("%zdu (Data (Tree))\n", sent_len);
+
+            //// SENDING COMPRESSED DATA
+            // Sending header
+            strcpy(header.flags, "ld");
+            header.data_length = compressed_count * sizeof(uint32_t);
+            sent_len = send(client_fd, serialize_header(&header, header_buf), 16, 0);
+            DEBUG_MESSAGE("%zdu (Header)\n", sent_len);
+
+            // Sending data
+            sent_len = send(client_fd, compressed_serialized, compressed_count * sizeof(uint32_t), 0);
+            if (sent_len != compressed_count * sizeof(uint32_t)) {
+                printf("Sent/Buffer: %zd / %lu\n", sent_len, compressed_count * sizeof(uint32_t));
+            }
+            byte_counter += sent_len;
+            DEBUG_MESSAGE("%zdu (Data (Compressed))\n", sent_len);
+
+            free(compressed_serialized);
+            free(tree_buf);
         }
     }
 

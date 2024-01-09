@@ -4,9 +4,11 @@
 #include "server.h"
 #include "../structures/list/array_list.h"
 #include "../utils/macros.h"
+#include "compression_algorithms/LZW/LZW_core.h"
 #include "compression_algorithms/huffman/code_table.h"
 #include "compression_algorithms/huffman/huffman_core.h"
 #include "header.h"
+#include "structures/tree/red_black_tree.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -50,6 +52,15 @@ static void *serve_client(void *cti_v) {
     // Huffman-compressed data
     unsigned char *huff_compressed_data = NULL;
     size_t huff_compressed_data_size = 0;
+
+    // LZW Tree
+    RBTree lzw_tree;
+    unsigned char *lzw_tree_buf = NULL;
+    size_t lzw_tree_buf_size = 0;
+    // LZW-Compressed data
+    unsigned char *lzw_compressed_data = NULL;
+    int *lzw_compressed_data_deserialized = NULL;
+    size_t lzw_compressed_data_size = 0;
 
     int byte_counter = 0;
     int byte_counter_from_read = 0;
@@ -248,6 +259,114 @@ static void *serve_client(void *cti_v) {
                         fprintf(stderr, "Missing second flag in Huffman header\n");
                         exit(97);
                     }
+                } else if (*h.flags == 'l') { // LZW
+                    byte_counter_from_read += start_size;
+
+                    if (*(h.flags + 1) == 't') { // TREE
+                        // printf("Received LZW Tree\n");
+
+                        if (chunk_remaining_bytes == 0) {
+
+                            if (!lzw_tree_buf) {
+                                byte_counter += start_size;
+
+                                red_black_tree_init(&lzw_tree);
+                                red_black_tree_deserialize(&lzw_tree, start, h.data_length);
+                            } else {
+                                memcpy(lzw_tree_buf + lzw_tree_buf_size, start, start_size);
+                                lzw_tree_buf_size += start_size;
+                                byte_counter += start_size;
+
+                                red_black_tree_init(&lzw_tree);
+                                red_black_tree_deserialize(&lzw_tree, lzw_tree_buf, h.data_length);
+
+                                free(lzw_tree_buf);
+                                lzw_tree_buf = NULL;
+                                lzw_tree_buf_size = 0;
+                            }
+                        } else { // Tree received in two/more separate reads
+                            if (!lzw_tree_buf) {
+                                lzw_tree_buf = malloc(h.data_length);
+                            }
+                            memcpy(lzw_tree_buf + lzw_tree_buf_size, start, start_size);
+                            lzw_tree_buf_size += start_size;
+                            byte_counter += start_size;
+                        }
+
+                    } else if (*(h.flags + 1) == 'd') { // COMPRESSED DATA
+                        // printf("Received LZW-compressed data");
+
+                        if (chunk_remaining_bytes == 0) {
+                            unsigned char *decompressed = NULL;
+                            size_t decompressed_size = 0;
+
+                            if (!lzw_compressed_data) {
+                                DEBUG_MESSAGE("Decoding from single read()..\n");
+                                byte_counter += start_size;
+
+                                lzw_compressed_data_deserialized = malloc(h.data_length);
+                                // printf("Compressed data:\n");
+                                for (int i = 0; i < start_size; i = i + sizeof(uint32_t)) {
+                                    uint32_t data = 0;
+                                    memcpy(&data, start + i, sizeof(data));
+                                    int deserialized_data = ntohl(data);
+                                    // printf("%d ", deserialized_data);
+                                    memcpy((unsigned char *)lzw_compressed_data_deserialized + i, &deserialized_data,
+                                           sizeof(data));
+                                }
+
+                                decompressed =
+                                    lzw_decompress_encode(lzw_compressed_data_deserialized,
+                                                          start_size / sizeof(uint32_t), &decompressed_size, &lzw_tree);
+                                free(lzw_compressed_data_deserialized);
+                                lzw_compressed_data_deserialized = NULL;
+
+                            } else {
+                                DEBUG_MESSAGE("Decoding from multiple read()'s..\n");
+                                byte_counter += start_size;
+                                memcpy(lzw_compressed_data + lzw_compressed_data_size, start, start_size);
+                                lzw_compressed_data_size += start_size;
+
+                                lzw_compressed_data_deserialized = malloc(h.data_length);
+
+                                for (int i = 0; i < lzw_compressed_data_size; i = i + sizeof(uint32_t)) {
+                                    uint32_t data = 0;
+                                    memcpy(&data, lzw_compressed_data + i, sizeof(data));
+                                    int deserialized_data = ntohl(data);
+                                    memcpy((unsigned char *)lzw_compressed_data_deserialized + i, &deserialized_data,
+                                           sizeof(data));
+                                }
+                                free(lzw_compressed_data);
+
+                                decompressed = lzw_decompress_encode(lzw_compressed_data_deserialized,
+                                                                     lzw_compressed_data_size / sizeof(uint32_t),
+                                                                     &decompressed_size, &lzw_tree);
+                                free(lzw_compressed_data_deserialized);
+                                lzw_compressed_data_deserialized = NULL;
+
+                                lzw_compressed_data = NULL;
+                                lzw_compressed_data_size = 0;
+                            }
+                            DEBUG_MESSAGE("Finished decoding, writing %zu B\n", decompressed_size);
+
+                            fwrite(decompressed, 1, decompressed_size, f);
+                            red_black_tree_destroy(&lzw_tree);
+                            free(decompressed);
+
+                        } else { // LZW-compressed data received in two/more separate reads
+                            if (!lzw_compressed_data) {
+                                lzw_compressed_data = malloc(h.data_length);
+                            }
+                            byte_counter += start_size;
+                            memcpy(lzw_compressed_data + lzw_compressed_data_size, start, start_size);
+                            lzw_compressed_data_size += start_size;
+                        }
+
+                    } else {
+                        fprintf(stderr, "Missing second flag in Huffman header\n");
+                        exit(97);
+                    }
+
                 } else {
                     fprintf(stderr, "Missing flag in FILE transfer\n");
                     exit(96);
