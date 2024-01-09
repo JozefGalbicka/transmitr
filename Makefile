@@ -30,7 +30,7 @@ install: $(PROGRAM_NAME)
 	@echo "Installing the program..."
 	@sudo cp $(PROGRAM_NAME) $(INSTALL_PATH)/$(PROGRAM_NAME)
 	@echo "Instaled"
-uninstall:
+uninstall: clean
 	@echo "Uninstalling the program..."
 	@sudo rm -f $(INSTALL_PATH)/$(PROGRAM_NAME)
 	@echo "Uninstaled"
