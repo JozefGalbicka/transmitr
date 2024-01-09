@@ -9,7 +9,7 @@
 #define EMPTY 0
 
 /**
- * Konštruktor pre prvok, node tabuky kódov.
+ * @brief Konštruktor pre prvok, node tabuky kódov.
  *
  * @param this Ukazovateľ na CodeNode, ktorý sa má inicializovať.
  * @param data Dáta, ktoré sa majú uložiť do uzla.
@@ -23,7 +23,7 @@ void code_node_init(CodeNode* this, unsigned char data)
 }
 
 /**
- * Nastaví kód a jeho veľkosť pre prvok, node tabuky kódov.
+ * @brief Nastaví kód a jeho veľkosť pre prvok, node tabuky kódov.
  *
  * @param this Ukazovateľ na CodeNode.
  * @param code Ukazovateľ na reťazec, ktorý predstavuje kód.
@@ -43,7 +43,7 @@ void code_node_set_code(CodeNode* this, const char* code, short code_size) {
 }
 
 /**
- * Deštruktor pre prvok, node tabuky kódov.
+ * @brief Deštruktor pre prvok, node tabuky kódov.
  *
  * @param this Ukazovateľ na CodeNode, ktorý sa má zničiť.
  */
@@ -55,7 +55,7 @@ void code_node_destroy(CodeNode* this)
 }
 
 /**
- * Vráti kód pre prvok, node tabuky kódov.
+ * @brief Vráti kód pre prvok, node tabuky kódov.
  *
  * @param this Ukazovateľ na CodeNode.
  * @return Ukazovateľ na reťazec predstavujúci kód prvku.
@@ -66,7 +66,7 @@ char* code_node_get_code(CodeNode* this)
 }
 
 /**
- * Vráti veľkosť kódu pre prvok, node tabuky kódov.
+ * @brief Vráti veľkosť kódu pre prvok, node tabuky kódov.
  *
  * @param this Ukazovateľ na CodeNode.
  * @return Veľkosť kódu.
@@ -77,7 +77,7 @@ short code_node_get_code_size(CodeNode* this)
 }
 
 /**
- * Serializuje prvok CodeNode do bajtovej postupnosti.
+ * @brief Serializuje prvok CodeNode do bajtovej postupnosti.
  *
  * Táto funkcia konvertuje dáta a kódovanú reprezentáciu uzla CodeNode do serializovanej formy.
  *
@@ -101,7 +101,7 @@ unsigned char *code_node_serialize(CodeNode *this, size_t *size)
 }
 
 /**
- * Deserializuje prvok CodeNode z bajtovej postupnosti.
+ * @brief Deserializuje prvok CodeNode z bajtovej postupnosti.
  * Táto funkcia rekonštruuje inštanciu CodeNode z jej serializovanej formy.
  *
  * @param this Ukazovateľ na inštanciu CodeNode, ktorá má byť deserializovaná.

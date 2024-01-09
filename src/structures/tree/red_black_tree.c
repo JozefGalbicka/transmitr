@@ -8,13 +8,26 @@
 
 #define EMPTY 0
 
+/**
+ * @brief Konštruktor pre Červeno-Čierny strom.
+ *
+ * Táto funkcia nastaví koreň na NULL a veľkosť na EMPTY.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom, ktorý má byť inicializovaný.
+ */
 void red_black_tree_init(RBTree* this)
 {
     this->root = NULL;
     this->size = EMPTY;
 }
 
-
+/**
+ * @brief Statická funkcia ktorá vykonáva postorder prechod a zničí každý uzol.
+ * @details Toto je interná pomocná funkcia.
+ *
+ * @param node Aktuálny uzol v prechode.
+ * @param node_function Ukazovateľ na funkciu pre špecifické zničenie uzla.
+ */
 static void red_black_tree_postorder_destroy(RBTreeNode* node, void (*node_function)(RBTreeNode*))
 {
     if (node != NULL)
@@ -26,7 +39,11 @@ static void red_black_tree_postorder_destroy(RBTreeNode* node, void (*node_funct
     }
 }
 
-
+/**
+ * @brief Deśtukrtor pre Červeno-Čierny strom.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom, ktorý má byť zničený.
+ */
 void red_black_tree_destroy(RBTree* this)
 {
     red_black_tree_postorder_destroy(this->root, red_black_tree_node_destroy);
@@ -34,7 +51,12 @@ void red_black_tree_destroy(RBTree* this)
     this->size = EMPTY;
 }
 
-
+/**
+ * @brief Vykonáva ľavú rotáciu okolo daného uzla.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom.
+ * @param node Ukazovateľ na uzol, okolo ktorého sa má vykonať rotácia.
+ */
 static void red_black_tree_left_rotation(RBTree* this, RBTreeNode* node)
 {
     if(node == NULL || red_black_tree_node_get_right_son(node) == NULL)
@@ -62,7 +84,12 @@ static void red_black_tree_left_rotation(RBTree* this, RBTreeNode* node)
     red_black_tree_node_set_parent(node, newTop);
 }
 
-
+/**
+ * @brief Vykonáva pravú rotáciu okolo daného uzla.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom.
+ * @param node Ukazovateľ na uzol, okolo ktorého sa má vykonať rotácia.
+ */
 static void red_black_tree_right_rotation(RBTree* this, RBTreeNode* node)
 {
     if (node == NULL || red_black_tree_node_get_left_son(node) == NULL)
@@ -88,7 +115,15 @@ static void red_black_tree_right_rotation(RBTree* this, RBTreeNode* node)
     red_black_tree_node_set_parent(node, newTop);
 }
 
-
+/**
+ * @brief Opravuje vlastnosti Červeno-Čierneho stromu.
+ *
+ * Táto funkcia zabezpečuje, že strom dodržiava všetky pravidlá Červeno-Čierneho stromu,
+ * ako sú farby uzlov a vyváženosť stromu.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom.
+ * @param node Ukazovateľ na uzol, kde sa má začať oprava.
+ */
 static void red_black_tree_rules_repair(RBTree* this, RBTreeNode* node)
 {
     RBTreeNode *parent = red_black_tree_node_get_parent(node);
@@ -156,7 +191,14 @@ static void red_black_tree_rules_repair(RBTree* this, RBTreeNode* node)
     red_black_tree_node_set_colour(this->root, black);
 }
 
-
+/**
+ * @brief Vloží nový uzol, node do Červeno-Čierneho stromu.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom.
+ * @param code Celé číslo reprezentujúce uzol.
+ * @param value Ukazovateľ na hodnotu, ktorá má byť uložená v uzle.
+ * @param value_size Veľkosť ukladanej hodnoty.
+ */
 void red_black_tree_insert(RBTree* this,int code,const unsigned char* value,size_t value_size)
 {
     RBTreeNode* newNode = malloc(sizeof(RBTreeNode));
@@ -191,7 +233,15 @@ void red_black_tree_insert(RBTree* this,int code,const unsigned char* value,size
     this->size++;
 }
 
-
+/**
+ * @brief Statická funkcia ktorá získava uzol s najmenšou hodnotou v strome alebo v jeho podstrome.
+ *
+ * Táto funkcia prechádza stromom alebo podstromom od daného uzla vždy k najľavejšiemu potomkovi,
+ * čím nájde uzol s najmenšou hodnotou.
+ *
+ * @param node Ukazovateľ na uzol, od ktorého sa má hľadať najmenší uzol.
+ * @return RBTreeNode* Ukazovateľ na najmenší uzol.
+ */
 static RBTreeNode* red_black_tree_get_minimum_node(RBTreeNode* node)
 {
     while (red_black_tree_node_get_left_son(node) != NULL)
@@ -201,7 +251,16 @@ static RBTreeNode* red_black_tree_get_minimum_node(RBTreeNode* node)
     return node;
 }
 
-
+/**
+ * @brief Statická funkcia ktorá transplantuje jeden uzol za iný v strome.
+ *
+ * Táto funkcia nahrádza jedným stromovým uzlom (nodeA) iným uzlom (nodeB),
+ * pričom zachováva stromovú štruktúru.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom.
+ * @param nodeA Ukazovateľ na uzol, ktorý má byť nahradený.
+ * @param nodeB Ukazovateľ na uzol, ktorým sa nahradí nodeA.
+ */
 static void red_black_tree_node_transplant(RBTree* this, RBTreeNode* nodeA, RBTreeNode* nodeB) {
     if (red_black_tree_node_get_parent(nodeA) == NULL)
         this->root = nodeB;
@@ -214,7 +273,16 @@ static void red_black_tree_node_transplant(RBTree* this, RBTreeNode* nodeA, RBTr
         red_black_tree_node_set_parent(nodeB, red_black_tree_node_get_parent(nodeA));
 }
 
-
+/**
+ * @brief Odstráni uzol zo stromu.
+ *
+ * Táto funkcia odstráni špecifikovaný uzol zo stromu a potom vykoná príslušné úpravy na udržanie
+ * vlastností Červeno-Čierneho stromu.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom.
+ * @param node Ukazovateľ na uzol, ktorý má byť odstránený.
+ * @return RBTreeNode* Ukazovateľ na odstránený uzol.
+ */
 RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node) {
     if (node == NULL)
         return NULL;
@@ -264,7 +332,16 @@ RBTreeNode* red_black_tree_remove(RBTree* this, RBTreeNode* node) {
     return node;
 }
 
-
+/**
+ * @brief Hľadá uzol podľa jeho hodnoty.
+ *
+ * Táto funkcia prechádza stromom alebo podstromom a hľadá uzol, ktorého hodnota zodpovedá zadanému vstupu.
+ *
+ * @param value Ukazovateľ na hodnotu, podľa ktorej sa hľadá uzol.
+ * @param subRoot Ukazovateľ na koreň podstromu, v ktorom sa má hľadať.
+ * @param value_size Veľkosť hodnoty.
+ * @return RBTreeNode* Ukazovateľ na nájdený uzol, alebo NULL, ak sa taký nenájde.
+ */
 RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* subRoot, size_t value_size)
 {
     if (subRoot == NULL)
@@ -293,6 +370,13 @@ RBTreeNode* red_black_tree_find_node_by_value(unsigned char* value, RBTreeNode* 
     return red_black_tree_find_node_by_value(value, red_black_tree_node_get_right_son(subRoot),value_size);
 }
 
+/**
+ * @brief Nájde uzol podľa jeho kódu.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom.
+ * @param code Kód uzla, ktorý sa má nájsť.
+ * @return RBTreeNode* Ukazovateľ na nájdený uzol alebo NULL, ak sa nenájde.
+ */
 RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code) {
     RBTreeNode* current = this->root;
 
@@ -309,12 +393,27 @@ RBTreeNode* red_black_tree_find_by_code(RBTree* this, int code) {
     return NULL;
 }
 
+/**
+ * @brief Získava veľkosť (počet uzlov) Červeno-Čierneho stromu.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom, ktorého veľkosť má byť zistená.
+ * @return size_t Počet uzlov v strome.
+ */
 size_t red_black_tree_get_size(RBTree* this)
 {
     return this->size;
 }
 
-
+/**
+ * @brief Získa všetky uzly stromu v postorder poradí.
+ *
+ * Táto funkcia prechádza stromom a ukladá uzly do zadaného poľa v postorder poradí,
+ * t.j. najprv navštívi ľavého potomka, potom pravého potomka a nakoniec rodičovský uzol.
+ *
+ * @param node Ukazovateľ na aktuálny uzol v prechode.
+ * @param nodeArray Ukazovateľ na pole uzlov, kam budú uzly ukladané.
+ * @param size Ukazovateľ na premennú, kde sa ukladá počet uzlov.
+ */
 void red_black_tree_postorder_get_nodes(RBTreeNode* node,RBTreeNode** nodeArray, size_t* size)
 {
     if (node != NULL)
@@ -326,7 +425,17 @@ void red_black_tree_postorder_get_nodes(RBTreeNode* node,RBTreeNode** nodeArray,
     }
 }
 
-unsigned char *red_black_tree_serialize(RBTree *this, size_t *size) {
+/**
+ * @brief Serializuje Červeno-Čierny strom do poľa bajtov.
+ *
+ * Táto funkcia prechádza stromom a konvertuje jeho uzly na sériu bajtov.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom, ktorý má byť serializovaný.
+ * @param size Ukazovateľ na premennú, kde sa uloží veľkosť výsledného bajtového poľa.
+ * @return unsigned char* Ukazovateľ na výsledné pole bajtov reprezentujúce strom.
+ */
+unsigned char *red_black_tree_serialize(RBTree *this, size_t *size)
+{
     RBTreeNode *node_array[this->size];
     size_t node_array_size = 0;
 
@@ -339,7 +448,8 @@ unsigned char *red_black_tree_serialize(RBTree *this, size_t *size) {
     unsigned char *buf = malloc(buf_capacity);
 
     red_black_tree_postorder_get_nodes(this->root, node_array, &node_array_size);
-    for (int i = 0; i < node_array_size; i++) {
+    for (int i = 0; i < node_array_size; i++)
+    {
         node = node_array[i];
 
         node_buf = red_black_tree_node_serialize(node, &node_buf_size);
@@ -357,7 +467,8 @@ unsigned char *red_black_tree_serialize(RBTree *this, size_t *size) {
         node_buf = NULL;
         node_buf_size = 0;
     }
-    if (node_array_size != this->size) {
+    if (node_array_size != this->size)
+    {
         fprintf(stderr, "Post order did not include all nodes in serialization\n");
         exit(101);
     }
@@ -366,7 +477,17 @@ unsigned char *red_black_tree_serialize(RBTree *this, size_t *size) {
     return buf;
 }
 
-void red_black_tree_deserialize(RBTree *this, unsigned char *buffer, size_t size) {
+/**
+ * @brief Deserializuje Červeno-Čierny strom z poľa bajtov.
+ *
+ * Táto funkcia berie pole bajtov a rekonštruuje z neho Červeno-Čierny strom.
+ *
+ * @param this Ukazovateľ na Červeno-Čierny strom, do ktorého sa má deserializovať.
+ * @param buffer Ukazovateľ na pole bajtov, ktoré obsahuje serializovaný strom.
+ * @param size Veľkosť bajtového poľa.
+ */
+void red_black_tree_deserialize(RBTree *this, unsigned char *buffer, size_t size)
+{
 
     size_t curr_index = 0;
     unsigned char *curr_buf = buffer;
@@ -376,7 +497,8 @@ void red_black_tree_deserialize(RBTree *this, unsigned char *buffer, size_t size
     size_t value_size;
     unsigned char *value = NULL;
 
-    while (curr_index < size) {
+    while (curr_index < size)
+    {
         new_curr_buf = red_black_tree_node_deserialize(curr_buf, &code, &value_size, &value);
         //printf("Code: '%d'\n", code);
         //printf("Value size: %zu\n", value_size);

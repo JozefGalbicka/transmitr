@@ -9,7 +9,7 @@
 #define EMPTY 0
 
 /**
- * Obaľovacia fukncia pre fukciu ktorá získava frekvenciu pre uzol, node min-heapu.
+ * @brief Obaľovacia fukncia pre fukciu ktorá získava frekvenciu pre uzol, node min-heapu.
  *
  * @param node Ukazovateľ na uzol, z ktorého sa má získať frekvencia.
  * @return Frekvencia daného uzla.
@@ -20,7 +20,7 @@ long long wrapper_min_heap_node_get_freq(void* node)
 }
 
 /**
- * Obaľovacia fukncia pre fukciu konštruktora uzla, node min-heap.
+ * @brief Obaľovacia fukncia pre fukciu konštruktora uzla, node min-heap.
  *
  * @param node Ukazovateľ na uzol, ktorý sa má inicializovať.
  * @param data Dáta, ktoré sa majú uložiť do uzla.
@@ -32,7 +32,7 @@ void wrapper_min_heap_node_init(void* node, unsigned char data, long long freq)
 }
 
 /**
- * Obaľovacia fukncia pre fukciu deštruktora uzla, node min-heap.
+ * @brief Obaľovacia fukncia pre fukciu deštruktora uzla, node min-heap.
  *
  * @param node Ukazovateľ na uzol, ktorý sa má zničiť.
  */
@@ -42,7 +42,7 @@ void wrapper_min_heap_node_destroy(void* node)
 }
 
 /**
- * Statická fukcia ktorá kóduje vstupné dáta do bitového prúdu (bitstream) pomocou tabuľky kódov.
+ * @brief Statická fukcia ktorá kóduje vstupné dáta do bitového prúdu (bitstream) pomocou tabuľky kódov.
  * Táto funkcia prechádza vstupné dáta a pre každý bajt vstupu vyhľadá príslušný kódv tabuľke kódov.
  * Každý takýto kód je potom zapísaný do výstupného bitového prúdu.
  *
@@ -91,7 +91,7 @@ static void encodeToBitstream(CodeTable* table, unsigned char* input, size_t inp
 }
 
 /**
- * Statická funkcia ktorá dekóduje bitový prúd späť do pôvodných dát s použitím tabuľky kódov.
+ * @brief Statická funkcia ktorá dekóduje bitový prúd späť do pôvodných dát s použitím tabuľky kódov.
  * Táto funkcia prechádza bitový prúd vstupných dát, rozkladá ho na individuálne kódya hľadá zodpovedajúce znaky v tabuľke kódov.
  * Každý nájdený kód sa prevádza späť na pôvodný znak a ukladá do výstupného poľa.
  *
@@ -159,7 +159,7 @@ static void decodeFromBitstream(const unsigned char* input, int inputSize, int v
 }
 
 /**
- * Zakóduje vstupné dáta pomocou Huffmanovho kódovania.
+ * @brief Zakóduje vstupné dáta pomocou Huffmanovho kódovania.
  * Táto funkcia najprv vytvorí frekvenčnú tabuľku na základe vstupných dát, potom vytvorí minimálnu haldu a Huffmanov strom.
  * Po vytvorení Huffmanovho stromu sa generujú kódy pre každý znak a tieto kódy sa používajú na zakódovanie vstupných dát do bitového prúdu.
  *
@@ -208,7 +208,7 @@ void huffman_encode( unsigned char* input, size_t inputSize,unsigned char* outpu
 }
 
 /**
- * Dekóduje vstupné dáta zakódované pomocou Huffmanovho kódovania.
+ * @brief Dekóduje vstupné dáta zakódované pomocou Huffmanovho kódovania.
  * Táto funkcia používa statickú funkciu decodeFromBitstream.
  * Slúži ako obaľovacia fukcia pre ňu.
  *

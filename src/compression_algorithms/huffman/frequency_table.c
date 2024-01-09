@@ -11,7 +11,7 @@
 #define EMPTY 0
 
 /**
- * Konštruktor pre frekvenćnú tabuľku.
+ * @brief Konštruktor pre frekvenćnú tabuľku.
  *
  * @param this Ukazovateľ na inštanciu FrTable (frekvenčná tabuľka), ktorá má byť inicializovaná.
  */
@@ -21,7 +21,7 @@ void frequency_table_init(FrTable* this)
 }
 
 /**
- * Deštruktor pre frekvenčnú tabuľku.
+ * @brief Deštruktor pre frekvenčnú tabuľku.
  *
  * @param this Ukazovateľ na inštanciu FrTable (frekvenčná tabuľka), ktorá má byť zničená.
  */
@@ -32,7 +32,7 @@ void frequency_table_destroy(FrTable* this)
 }
 
 /**
- * Vytvorí frekvenčnú tabuľku na základe vstupných dát.
+ * @brief Vytvorí frekvenčnú tabuľku na základe vstupných dát.
  *
  * @param this Ukazovateľ na inštanciu FrTable (frekvenčná tabuľka).
  * @param input Ukazovateľ na vstupné dáta.
@@ -47,7 +47,7 @@ bool frequency_table_create(FrTable* this, unsigned char* input, size_t inputSiz
 }
 
 /**
- * Vráti frekvenciu pre daný index v frekvenčnú tabuľku.
+ * @brief Vráti frekvenciu pre daný index v frekvenčnú tabuľku.
  *
  * @param this Ukazovateľ na inštanciu FrTable (frekvenčná tabuľka).
  * @param index Index, pre ktorý sa má získať frekvencia.
