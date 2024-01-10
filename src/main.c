@@ -33,14 +33,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (client + server == 0) {
-        server = 1;
-        client = 1;
-    }
-
-
-    return start_console(server, client);
-
     if (errflg) {
         fprintf(stderr, "\n");
         fprintf(stderr, "Usage:\ttransmitr [OPTIONS]\n");
@@ -53,4 +45,11 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "  -h\tShow help\n");
         return (2);
     }
+
+    if (client + server == 0) {
+        server = 1;
+        client = 1;
+    }
+
+    return start_console(server, client);
 }
